@@ -1,0 +1,130 @@
+{
+  "contract": "okf-tools-0.2-1",
+  "specRevision": "0b87c52c6ef999286c745e19998fdfcd03d5dbee",
+  "synthetic": true,
+  "cases": [
+    {
+      "directory": "valid-minimal",
+      "complianceRuleIds": [],
+      "viewerExpectation": "One generic concept; no mandatory title/description/index."
+    },
+    {
+      "directory": "valid-extensions",
+      "complianceRuleIds": [],
+      "viewerExpectation": "Preserve extension metadata and normalize bare verified mapping for consumption."
+    },
+    {
+      "directory": "optional-shapes",
+      "complianceRuleIds": [],
+      "viewerExpectation": "Render generic concept; optional-family quality warnings are not hard rejection."
+    },
+    {
+      "directory": "invalid-type",
+      "complianceRuleIds": [
+        "C002"
+      ],
+      "viewerExpectation": "Keep document discoverable and show malformed/missing-type diagnostic."
+    },
+    {
+      "directory": "invalid-frontmatter",
+      "complianceRuleIds": [
+        "C001"
+      ],
+      "viewerExpectation": "Keep raw document readable safely with parse diagnostic."
+    },
+    {
+      "directory": "invalid-nested-index",
+      "complianceRuleIds": [
+        "C003"
+      ],
+      "viewerExpectation": "Nested index remains reserved and visible with diagnostic."
+    },
+    {
+      "directory": "valid-log",
+      "complianceRuleIds": [],
+      "viewerExpectation": "Reserved log is not a concept; valid leap-day heading."
+    },
+    {
+      "directory": "invalid-log",
+      "complianceRuleIds": [
+        "C003"
+      ],
+      "viewerExpectation": "Reserved log remains visible with date-heading diagnostic."
+    },
+    {
+      "directory": "path-cases",
+      "complianceRuleIds": [],
+      "viewerExpectation": "Show nested/disconnected concepts and duplicate titles with distinct paths; preserve missing targets."
+    },
+    {
+      "directory": "hostile-malformed",
+      "complianceRuleIds": [
+        "C001"
+      ],
+      "viewerExpectation": "Display safe parse error; execute no script or unsafe URL."
+    }
+  ],
+  "pathExpectations": [
+    {
+      "source": "nested/alpha.md",
+      "url": "/root.md#section",
+      "fileTarget": "root.md",
+      "fragment": "section"
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "beta.md?view=compact#part",
+      "fileTarget": "nested/beta.md",
+      "fragment": "part"
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "space%20name.md",
+      "fileTarget": "nested/space name.md"
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "missing.md",
+      "fileTarget": "nested/missing.md",
+      "exists": false,
+      "complianceInvalid": false
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "../loose/",
+      "directoryTarget": "loose",
+      "exists": true,
+      "checkerQualityLinkTargetExists": true,
+      "viewerReaderTarget": null,
+      "note": "Existing directory is valid target; viewer cannot invent missing loose/index.md."
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "../../outside.md",
+      "unsupported": "outside-bundle"
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "bad%2Fname.md",
+      "unsupported": "encoded-separator"
+    },
+    {
+      "source": "nested/alpha.md",
+      "url": "https://example.invalid/external",
+      "external": true,
+      "fetch": false
+    }
+  ],
+  "graphRules": {
+    "include": "explicit Markdown inline/reference links resolving to internal Markdown documents",
+    "exclude": [
+      "metadata resource",
+      "images",
+      "HTML links",
+      "inline code",
+      "fenced code"
+    ],
+    "duplicateTitles": "distinct path IDs",
+    "fragmentNavigation": "viewer preserves fragment; checker heading validation deferred"
+  }
+}
