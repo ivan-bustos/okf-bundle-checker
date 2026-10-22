@@ -6,19 +6,27 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { checkBundle, inspectCompliance, loadPolicy, OperationalError, renderReport } from './index.js';
-const HELP='Usage: okf-checker check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error.\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nRelease candidate 0.1.0; npm publication is not yet authorized.\n';
-interface Options { root:string; format:'text'|'json'; configPath?:string; output?:string; failOn?:string }
+const HELP='Usage: okf-checker check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nRelease candidate 0.1.0; npm publication is not yet authorized.\n';
+export type ColorMode='auto'|'always'|'never';
+export interface Presentation { isTTY?:boolean; env?:Readonly<Record<string,string|undefined>> }
+/** Explicit CLI choice wins; auto colors only an interactive stdout, never a report file. */
+export function useColor(mode:ColorMode,isTTY:boolean,env:Readonly<Record<string,string|undefined>>,outputFile=false):boolean {
+  if(mode!=='auto')return mode==='always';
+  return !outputFile&&isTTY&&env.TERM!=='dumb'&&!env.NO_COLOR;
+}
+interface Options { root:string; format:'text'|'json'; color:ColorMode; configPath?:string; output?:string; failOn?:string }
 function argumentsFor(args:string[]):Options {
   if(args[0]!=='check'||!args[1]||args[1].startsWith('-'))throw new OperationalError('usage','Expected check and a bundle directory. Use --help.');
-  const options:Options={root:args[1],format:'text'}; const used=new Set<string>();
+  const options:Options={root:args[1],format:'text',color:'auto'}; const used=new Set<string>();
   for(let i=2;i<args.length;i+=2) {
     const key=args[i]; const value=args[i+1];
     if(!key||!value||value.startsWith('--')||used.has(key))throw new OperationalError('usage','Flags require one value and cannot be repeated.'); used.add(key);
     if(key==='--config')options.configPath=value;
     else if(key==='--output')options.output=value;
     else if(key==='--fail-on')options.failOn=value;
+    else if(key==='--color'&&(value==='auto'||value==='always'||value==='never'))options.color=value;
     else if(key==='--format'&&(value==='text'||value==='json'))options.format=value;
-    else throw new OperationalError('usage','Unknown option or unsupported format. Use --help.');
+    else throw new OperationalError('usage','Unknown option or unsupported value. Use --help.');
   }
   return options;
 }
@@ -43,7 +51,7 @@ async function writeReport(path:string,text:string,bundle:string,configPath:stri
   } catch(error) { if(error instanceof OperationalError)throw error; throw new OperationalError('report-write','Unable to save the report; no completed report was published.'); }
   finally {if(temp)await rm(temp,{force:true});}
 }
-export async function run(args:string[],out:(text:string)=>void|Promise<void>,err:(text:string)=>void|Promise<void>,signal?:AbortSignal):Promise<number> {
+export async function run(args:string[],out:(text:string)=>void|Promise<void>,err:(text:string)=>void|Promise<void>,signal?:AbortSignal,presentation:Presentation={}):Promise<number> {
   try {
     if(args.length===1&&(args[0]==='--help'||args[0]==='-h')) {await out(HELP);return 0;}
     if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before completion.');
@@ -53,7 +61,7 @@ export async function run(args:string[],out:(text:string)=>void|Promise<void>,er
     }
     const options=argumentsFor(args);
     const policy=await loadPolicy({...options.configPath!==undefined?{configPath:options.configPath}:{},...options.failOn!==undefined?{failOn:options.failOn}:{}});
-    const report=await checkBundle(options.root,policy,signal);const text=renderReport(report,options.format);
+    const report=await checkBundle(options.root,policy,signal);const text=renderReport(report,options.format,{color:useColor(options.color,presentation.isTTY===true,presentation.env??{},options.output!==undefined)});
     await setImmediate();await setImmediate();if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before report publication.');
     if(options.output!==undefined)await writeReport(options.output,text,options.root,options.configPath??'.okf-validator.yml',signal);else await out(text);
     return report.exitCode;
@@ -68,7 +76,7 @@ if(invokedEntry!==undefined&&invokedEntry===await realpath(fileURLToPath(import.
   // Writable errors arrive asynchronously; callbacks make them part of the operational result.
   process.stdout.on('error',()=>{});process.stderr.on('error',()=>{});
   const write=(stream:NodeJS.WriteStream,text:string)=>new Promise<void>((done,reject)=>stream.write(text,error=>error?reject(new OperationalError('output-write','Unable to deliver the report output.')):done()));
-  try {process.exitCode=await run(process.argv.slice(2),text=>write(process.stdout,text),text=>write(process.stderr,text),controller.signal);}
+  try {process.exitCode=await run(process.argv.slice(2),text=>write(process.stdout,text),text=>write(process.stderr,text),controller.signal,{isTTY:process.stdout.isTTY===true,env:process.env});}
   catch {process.exitCode=2;}
   finally {process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);}
 }
