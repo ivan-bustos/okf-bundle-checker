@@ -86,6 +86,6 @@ The shared fixture manifest covers minimal custom-type concepts, extension keys,
 root-version indexes, reserved-file misuse, missing type/frontmatter, broken
 links, optional metadata shape, nested paths, directory links and code examples.
 Runtime tests add malformed encodings, YAML resource exhaustion, filesystem
-containment and deterministic source locations. Claim only rules actually
-implemented in the current batch; the remaining quality catalog is a contract
-for later tickets.
+containment and deterministic source locations. The quality/configuration batch implements Q001–Q009; runtime tests cover
+severity selection, optional families and index/link interpretations. See
+configuration.md for the implemented policy and batch-7-11.md for remaining gates.

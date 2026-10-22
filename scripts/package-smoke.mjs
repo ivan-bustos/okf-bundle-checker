@@ -11,6 +11,8 @@ run('npm',['install','--ignore-scripts','--no-audit','--no-fund','--prefix',root
 const entry=join(root,'node_modules/okf-bundle-checker-development/dist/cli.js');
 const result=JSON.parse(run(process.execPath,[entry,'inspect',resolve('tests/fixtures/shared/valid-minimal')],root));
 if(result.findings.length!==0||result.scope.concepts!==1)throw new Error('Packed CLI check failed');
+const full=JSON.parse(run(process.execPath,[entry,'check',resolve('tests/fixtures/shared/valid-minimal'),'--format','json'],root));
+if(!full.completed||full.schemaVersion!==1||full.scope.concepts!==1||full.exitCode!==0)throw new Error('Packed quality CLI check failed');
 const pkg=JSON.parse(await readFile(join(root,'node_modules/okf-bundle-checker-development/package.json'),'utf8'));
 if(!pkg.private)throw new Error('Development package must remain private');
 console.log(`Packed CLI smoke passed (${packed.files.length} files).`);
