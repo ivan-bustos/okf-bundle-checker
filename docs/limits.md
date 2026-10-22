@@ -49,3 +49,8 @@ Log entries are read as H2 date headings following §9's documented layout; H1 i
 the optional title. Calendar-valid YYYY-MM-DD is required, including leap years.
 Root version accepts YAML string `"0.2"` or numeric `0.2`; other shapes/versions are
 unsupported operationally. No minimum body length or mandatory heading is added.
+
+Policy files are limited to 64 KiB, 32 YAML levels and 10,000 YAML nodes; aliases,
+custom tags, duplicate/non-string keys and unknown schema members are invalid
+configuration. Only the requested config (or cwd default) is read. These limits
+are checked before conversion and do not change the bundle's conformance rules.
