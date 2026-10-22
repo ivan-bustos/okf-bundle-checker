@@ -61,7 +61,9 @@ export async function run(args:string[],out:(text:string)=>void|Promise<void>,er
     await err(JSON.stringify({schemaVersion:1,completed:false,error:error instanceof OperationalError?error.code:'internal-error',message:error instanceof OperationalError?error.message:'Unable to complete the check safely.',...(error instanceof OperationalError&&error.path?{path:error.path}:{})})+'\n');return 2;
   }
 }
-if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
+// Node canonicalizes module paths, including macOS temporary-directory aliases and npm bin links.
+const invokedEntry=process.argv[1]?await realpath(process.argv[1]).catch(()=>undefined):undefined;
+if(invokedEntry!==undefined&&invokedEntry===await realpath(fileURLToPath(import.meta.url)).catch(()=>undefined)) {
   const controller=new AbortController(); const stop=()=>controller.abort(); process.once('SIGINT',stop);process.once('SIGTERM',stop);
   // Writable errors arrive asynchronously; callbacks make them part of the operational result.
   process.stdout.on('error',()=>{});process.stderr.on('error',()=>{});

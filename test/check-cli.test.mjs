@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync,spawn} from 'node:child_process';
-import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,rm,symlink} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
-import {join,resolve} from 'node:path';
+import {dirname,join,resolve} from 'node:path';
 import {run} from '../dist/cli.js';
 import {checkBundle} from '../dist/index.js';
 const entry=resolve('dist/cli.js');
@@ -59,5 +59,19 @@ test('closed stdout pipe exits operationally without an unhandled error stack',a
     child.stdout.once('data',()=>child.stdout.destroy());
     const code=await new Promise((done,reject)=>{const timer=setTimeout(()=>{child.kill();reject(new Error('CLI did not finish after pipe closure'));},15000);child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('close',code=>{clearTimeout(timer);done(code);});});
     assert.equal(code,2,stderr);assert.equal(JSON.parse(stderr).error,'output-write');assert.ok(!stderr.includes('Error:'));
+  }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('CLI executes through linked directories without running when imported',async()=>{
+  const {root,bundle}=await fixture();try{
+    const alias=join(root,'linked-dist');await symlink(dirname(entry),alias,'junction');
+    for(const flags of [[],['--preserve-symlinks-main']])for(const args of [['inspect',bundle],['check',bundle,'--format','json']]){
+      const result=spawnSync(process.execPath,[...flags,join(alias,'cli.js'),...args],{cwd:root,encoding:'utf8'});
+      assert.equal(result.status,0,result.stderr);assert.equal(result.stderr,'');assert.equal(JSON.parse(result.stdout).scope.concepts,1);
+    }
+    const imported=spawnSync(process.execPath,['--input-type=module','-e',`await import(${JSON.stringify(new URL('../dist/cli.js',import.meta.url).href)})`],{cwd:root,encoding:'utf8'});
+    assert.equal(imported.status,0,imported.stderr);assert.equal(imported.stdout,'');assert.equal(imported.stderr,'');
+    const missing=spawnSync(process.execPath,['--input-type=module','-e',`process.argv[1]=${JSON.stringify(join(root,'absent.js'))}; const before=process.listenerCount('SIGINT'); await import(${JSON.stringify(new URL('../dist/cli.js',import.meta.url).href)}); if(process.exitCode!==undefined||process.listenerCount('SIGINT')!==before)throw new Error('Import changed process behavior');`],{cwd:root,encoding:'utf8'});
+    assert.equal(missing.status,0,missing.stderr);assert.equal(missing.stdout,'');assert.equal(missing.stderr,'');
   }finally{await rm(root,{recursive:true,force:true});}
 });
