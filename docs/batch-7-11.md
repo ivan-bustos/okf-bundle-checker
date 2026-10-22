@@ -1,5 +1,9 @@
 # Quality/configuration/reporting acceptance map (#7–#11)
 
+Historical batch record. The later owner-approved identity and release preparation
+are documented in [release readiness](release-readiness.md); pending decisions below
+describe the state of this earlier batch, not the current release candidate.
+
 Base: merged foundation PR #15, main commit
 `252d8918ca2d1b4550f9609962c7b08d476ef564`.
 This batch does not duplicate #2–#6 or change the shared compliance fixture contract.

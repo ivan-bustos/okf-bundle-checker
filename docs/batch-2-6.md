@@ -1,5 +1,9 @@
 # First-batch acceptance map
 
+Historical batch record. The later owner-approved identity and release preparation
+are documented in [release readiness](release-readiness.md); pending decisions below
+describe the state of this earlier batch, not the current release candidate.
+
 - #2: spec-pin.json records immutable revision, exact checksum and byte length;
   rule-matrix.md audits hard versus advisory rules; shared synthetic fixtures are
   mirrored by viewer without a package/runtime dependency.

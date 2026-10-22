@@ -1,59 +1,78 @@
+![OKF Bundle Checker: linked documents with a check mark](assets/logo.svg)
+
 # OKF Bundle Checker
 
-An offline Open Knowledge Format bundle checker for local and CI use.
+**Check your knowledge bundle before it reaches your team.**
 
-Implementation is tracked in [the MVP roadmap](https://github.com/ivan-bustos/okf-bundle-checker/issues/1).
+An offline [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
+checker for local workflows and CI. It separates specification violations from
+configurable quality advice, with clear locations, deterministic reports and
+predictable exit codes. It never uploads your bundle or executes its contents.
 
-## Offline checks
+## Try it from source
 
-The compliance foundation (#2–#6) and configurable quality/config/reporting
-implementation (#7–#11) are available. This is still a private development build,
-not a released package. Security/performance acceptance and release handoff
-remain separate roadmap gates (#12–#14).
+Version **0.1.0 is an unpublished release candidate**. There is no published npm
+installation claim. After cloning this repository:
 
 ```sh
 npm ci --ignore-scripts
 npm run check
 node dist/cli.js check ./knowledge
-node dist/cli.js check ./knowledge --format json --fail-on warning
+node dist/cli.js check ./knowledge --format json --output ../okf-report.json
+node dist/cli.js check ./knowledge --fail-on warning
 ```
 
-C001–C003 enforce the audited hard core. Q001–Q009 offer configurable quality;
-custom types, unknown extensions and absent optional metadata families remain
-permitted. Default quality severity is warning, and the default failure threshold
-is error. Use explicit policy to make warnings fail CI. An empty concept scope
-is an operational failure, not success. No check uploads content, checks external
-URL availability, executes computations or certifies factual correctness.
+Use Node **22 or 24**. Linux, Windows and macOS are covered by the CI matrix.
+The selected package name is `okf-bundle-checker` and its command is
+`okf-checker`; see [local package installation and CI examples](docs/installation-ci.md).
+Package installation may access npm. Bundle validation does not need network access.
 
-See [configuration and report contract](docs/configuration.md) for precedence,
-output safety, exit codes and examples. `inspect` retains the older compliance-only
-JSON interface; `check` includes quality. The private binary is `okf-checker-dev`.
+## What it checks
 
-## Architecture
+- **Compliance, C001–C003:** UTF-8 Markdown, YAML structure, required type and
+  reserved-document rules against a [pinned OKF v0.2 audit](docs/rule-matrix.md).
+- **Quality, Q001–Q009:** descriptions, broken local links, directory indexes,
+  index coverage and optional metadata shapes. Set each to `off`, `warning` or
+  `error`; quality never becomes a claim of standards noncompliance.
+- **Safe operation:** bounded input, no followed bundle symlinks, inert YAML and
+  Markdown, case-sensitive logical links, and report writes outside the bundle.
 
-- `discovery.ts`: scoped file inventory and bounded reads.
-- `parser.ts`: inert UTF-8/YAML/Markdown AST, original source positions and links.
-- `compliance.ts`: audited hard rules and finding order.
-- `index.ts`: reusable engine composition, independent from the CLI.
-- `resolver.ts`, `metadata-quality.ts`, `index-quality.ts`: inventory-only resolution and quality.
-- `config.ts`, `policy.ts`: bounded configuration and explicit severity policy.
-- `report.ts`, `cli.ts`: deterministic rendering and thin argument/output adapter.
+Custom types, unknown extensions and absent optional metadata remain permitted.
+Warnings do not fail the default `error` threshold. Empty concept scopes and
+incomplete operational failures never report success.
 
-`npm run lint` performs an AST-based unsafe-syntax check plus whitespace checks;
-`npm run typecheck` applies strict TypeScript checks. `npm test` runs unit,
-fixture, filesystem and CLI tests. `npm run smoke` builds a private local tarball,
-installs it into a temporary directory and checks the installed CLI. Package
-installation may access npm; bundle validation itself does not.
+| Exit | Meaning |
+|---|---|
+| 0 | Check completed below the configured failure threshold |
+| 1 | Check completed with findings at or above the threshold |
+| 2 | Invalid configuration, unsupported input, unreadable files or operational failure |
 
-CI candidates are Node 22 and 24 on Linux, Windows and macOS. Support is claimed
-only for completed CI evidence, not inferred from the matrix. The local tested
-runtime is recorded in the PR. See [limits](docs/limits.md) and the
-[normative audit](docs/rule-matrix.md).
+[Configure rules and reports](docs/configuration.md) ·
+[Limits and security boundaries](docs/limits.md) ·
+[Acceptance evidence](docs/acceptance.md) ·
+[Release handoff](docs/release-readiness.md)
 
-## Owner decisions before release
+## Development
 
-The package name `okf-bundle-checker-development`, binary `okf-checker-dev`, and
-version `0.0.0` are private development placeholders, not a published identity.
-Package/CLI name, supported release runtime range, license, version, distribution
-registry and release approval remain owner decisions in #14. No license grant or
-publication is implied by this repository bootstrap. Do not publish this package.
+```sh
+npm run check       # lint, strict types, tests and installed-package smoke
+npm run benchmark   # representative observations, not a performance guarantee
+```
+
+The engine is reusable independently of the CLI. Discovery, parsing, compliance,
+quality, configuration and reporting are separate modules. `inspect` retains the
+older compliance-only JSON interface; `check` includes configurable quality.
+The [roadmap](https://github.com/ivan-bustos/okf-bundle-checker/issues/1) records
+implementation scope and review evidence.
+
+## Scope and release status
+
+Structural checks do not establish that knowledge is true. No AI correctness
+judgments, rewriting, remote URL checks, attested execution, dashboards, heading
+anchor checks, baselines, index generation, automatic PR comments or SARIF are
+included. Validate a stable local snapshot, not a hostile concurrently changing
+filesystem.
+
+Licensed under [MIT](LICENSE). The package remains `private: true` until separate
+publication approval. No npm name reservation, package release, credentials or
+deployment is implied by this release candidate. The logo is original repository-native SVG.

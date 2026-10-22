@@ -20,8 +20,8 @@ bounded buffers; assets are inventoried, never opened. YAML aliases, custom tags
 proof of invalid OKF. Duplicate YAML keys and non-mapping frontmatter are rejected.
 Markdown links come from an AST, including reference links; code and HTML are not
 executed. Parser byte ceilings bound work before AST allocation; node checks are
-post-parse and are not a hard wall-clock memory/CPU sandbox. Future performance
-acceptance must measure representative and hostile inputs (#12).
+post-parse and are not a hard wall-clock memory/CPU sandbox. Representative and hostile measurements are recorded in [acceptance evidence](acceptance.md);
+they are observations, not throughput guarantees.
 
 Exclusions match normalized POSIX-relative paths, case-sensitively. `*` matches
 within one segment, `?` matches one character, and `**` occupies a full segment
@@ -43,7 +43,7 @@ portable path APIs are not an OS sandbox against a hostile process racing ancest
 renames. Run against a private immutable copy when other actors can mutate the
 input. Never run this tool as a privilege boundary for an attacker-controlled
 live filesystem. No promise of throughput or memory usage beyond tested evidence
-is made in this foundation batch.
+is made by this release candidate.
 
 Log entries are read as H2 date headings following §9's documented layout; H1 is
 the optional title. Calendar-valid YYYY-MM-DD is required, including leap years.

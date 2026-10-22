@@ -1,21 +1,48 @@
 {
-  "name": "okf-bundle-checker-development",
-  "version": "0.0.0",
+  "name": "okf-bundle-checker",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Development-only offline OKF compliance checker",
-  "engines": {"node": ">=22.0.0"},
-  "bin": {"okf-checker-dev": "dist/cli.js"},
+  "description": "Offline Open Knowledge Format compliance and configurable quality checker",
+  "engines": {
+    "node": "^22.0.0 || ^24.0.0"
+  },
+  "bin": {
+    "okf-checker": "dist/cli.js"
+  },
   "exports": "./dist/index.js",
-  "files": ["dist", "docs", "README.md"],
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "assets",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "node scripts/lint.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
     "smoke": "node scripts/package-smoke.mjs",
-    "check": "npm run lint && npm run typecheck && npm test && npm run smoke"
+    "check": "npm run lint && npm run typecheck && npm test && npm run smoke",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "smoke:ci": "node scripts/ci-example-smoke.mjs --output reports/ci-examples",
+    "prepack": "npm run build"
   },
-  "dependencies": {"remark-gfm":"4.0.1","remark-parse":"11.0.0","unified":"11.0.5","yaml":"2.9.1"},
-  "devDependencies": {"@types/node":"24.19.1","typescript":"5.9.3"}
+  "dependencies": {
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.5",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "5.9.3"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivan-bustos/okf-bundle-checker.git"
+  }
 }
