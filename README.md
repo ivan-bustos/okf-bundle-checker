@@ -47,6 +47,7 @@ incomplete operational failures never report success.
 | 1 | Check completed with findings at or above the threshold |
 | 2 | Invalid configuration, unsupported input, unreadable files or operational failure |
 
+[Rule-by-rule reference](docs/rules.md) ·
 [Configure rules and reports](docs/configuration.md) ·
 [Limits and security boundaries](docs/limits.md) ·
 [Acceptance evidence](docs/acceptance.md) ·

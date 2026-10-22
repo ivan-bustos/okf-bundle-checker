@@ -166,19 +166,20 @@ test('PDF: empty reserved-only scope and unsupported version are operational, ne
   operational(check(input), 'unsupported-version');
 });
 
-test('PDF: text and JSON contain the same ordered findings, provenance, remediation and totals', async t => {
+test('PDF: grouped text and JSON retain every finding, provenance, remediation and total', async t => {
   const input = await fixture(t, {'a.md': concept('[Missing](absent.md)', 'description: Missing type'), 'index.md': '- [A](a.md)\n'});
   const result = check(input);
   const text = invoke(input.cwd, ['check', input.bundle]);
   assert.equal(text.status, result.status);
   assert.equal(text.stderr, '');
-  assert.equal((text.stdout.match(/ [CQ]\d{3} (?:compliance|quality)\//g) ?? []).length, result.report.findings.length);
-  let previous = -1;
-  for (const item of result.report.findings) {
-    const location = `${item.path}${item.position ? `:${item.position.line}:${item.position.column}` : ''}`;
-    const provenance = item.source ? ` (referenced from ${item.source.path}${item.source.position ? `:${item.source.position.line}:${item.source.position.column}` : ''})` : '';
-    const line = `${location} ${provenance} ${item.ruleId} ${item.layer}/${item.severity}: ${item.message}\n  ${item.remediation}`;
-    const offset = text.stdout.indexOf(line, previous + 1);
+  assert.equal((text.stdout.match(/^  [CQ]\d{3} (?:compliance|quality)\/(?:error|warning) \| Position:/gm) ?? []).length, result.report.findings.length);
+  let previous = text.stdout.indexOf('Errors (');
+  for (const severity of ['error', 'warning']) for (const item of result.report.findings.filter(finding => finding.severity === severity)) {
+    assert.ok(text.stdout.includes(`Path: ${item.path} (`));
+    const position = item.position ? `line ${item.position.line}, column ${item.position.column}` : 'not specified';
+    const provenance = item.source ? `    Referenced from: ${item.source.path}${item.source.position ? `:${item.source.position.line}:${item.source.position.column}` : ''}\n` : '';
+    const block = `  ${item.ruleId} ${item.layer}/${item.severity} | Position: ${position}\n${provenance}    Message: ${item.message}\n    Fix: ${item.remediation}`;
+    const offset = text.stdout.indexOf(block, previous + 1);
     assert.ok(offset > previous, `Missing or unordered text finding: ${item.ruleId}`);
     previous = offset;
   }

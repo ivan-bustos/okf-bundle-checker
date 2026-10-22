@@ -41,8 +41,8 @@ Promotion of quality to error never changes its `quality` layer. The default
 threshold is `error`; `warning` fails on warnings and errors. An `off` rule emits
 nothing. Exclusions apply before all rules and appear in scope metadata.
 `index_scope: root` applies Q003–Q005 only to the root; `all` includes every
-ancestor directory containing a scoped concept. Q001/Q002 still inspect all
-scoped documents. Index absence is quality, never hard compliance.
+ancestor directory containing a scoped concept. Q001 still checks parseable scoped concepts, including those with missing frontmatter; Q002 still checks
+links in all scoped parsed documents, including reserved indexes and logs. Index absence is quality, never hard compliance.
 
 Validation is offline and read-only. Reports are explicitly requested outputs,
 not bundle rewrites. `--output` must be outside the bundle and must not replace the
@@ -63,7 +63,7 @@ input/config paths, machine environment or source bodies are included. Findings
 carry rule ID, layer, severity, relative path, message, remediation and available
 line/column. Missing-link findings use the expected target path and a separate `source` reference with its document path/location. Missing-index findings use the expected index path; missing-coverage findings identify the existing index and name the omitted target.
 Ordering is case-sensitive path, line, column, rule ID, message, then remediation and source reference path/location.
-Text derives from the same report and escapes terminal controls.
+Text derives from the same findings but presents errors first, then warnings, grouped by path with a rule-count overview. Within each section it retains deterministic path/location/rule ordering. Every finding and remediation remains visible; JSON ordering and schema are unchanged. Text escapes source-derived terminal controls and directional/line-separator characters before applying optional styling.
 
 - Exit 0: check completed below the configured threshold, possibly with warnings.
 - Exit 1: check completed with a finding at/above threshold.
@@ -100,3 +100,29 @@ that child directory, as well as a direct directory link. The resolver still
 keeps directory and index-file identities separate. Linking a directory does not
 invent or require its optional index. Duplicate index entries do not produce
 repeated Q005 findings when one entry supplies meaningful descriptive text.
+
+## Readable text and terminal color
+
+Text reports show a result/summary, counts per rule, and separate error/warning
+sections grouped by path. Each finding retains its rule ID, layer, severity,
+location, explanation and fix; missing targets retain their source reference.
+Color is supplementary: the same labels and content appear without it.
+Use the [rule catalog](rules.md) to interpret each code and choose remediation.
+
+`--color auto` is the default. It colors interactive stdout only, not pipes or
+`--output` files, and respects a nonempty `NO_COLOR` environment variable and
+`TERM=dumb`. `--color never` always disables styling; `--color always` explicitly
+forces it for text, including redirected output or an output file, overriding
+those environment hints. JSON reports, legacy `inspect` output and operational
+JSON diagnostics never contain styling, regardless of color choice.
+
+```sh
+node dist/cli.js check ./knowledge --color never
+node dist/cli.js check ./knowledge --color always
+node dist/cli.js check ./knowledge --format json --output ./report.json
+```
+
+Changing presentation does not alter rules, findings, thresholds or exit codes.
+For stable machine consumption, use JSON rather than parsing the human layout.
+The programmatic `renderReport` defaults to plain text; pass `{color: true}` as
+its third argument to opt into ANSI styling.
