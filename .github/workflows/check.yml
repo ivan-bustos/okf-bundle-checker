@@ -18,4 +18,14 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run check
+      - name: Verify offline CI examples
+        run: npm run smoke:ci
+      - name: Collect synthetic example reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: okf-examples-${{ runner.os }}-node-${{ matrix.node }}
+          path: reports/ci-examples/
+          if-no-files-found: error
+          retention-days: 7
       - run: git diff --check

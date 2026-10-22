@@ -1,0 +1,39 @@
+# Example only: this file does not run while it remains under examples/.
+# Copy to .github/workflows/ only when intentionally enabling these checks.
+# It validates a source checkout, NOT an npm-published checker release.
+name: OKF checker source-install example
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  example:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Run the immutable commit selected by this workflow event, not a moving branch.
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      # Installation may use npm's registry. The checks themselves are offline.
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Verify expected pass and failure results
+        run: node scripts/ci-example-smoke.mjs --output reports/ci-examples
+      # Only synthetic example reports/logs are collected, never bundle bodies.
+      - name: Collect reports even when a check unexpectedly fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: okf-examples-${{ runner.os }}-node-${{ matrix.node }}
+          path: reports/ci-examples/
+          if-no-files-found: error
+          retention-days: 7

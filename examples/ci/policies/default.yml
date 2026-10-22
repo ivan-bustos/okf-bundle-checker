@@ -1,0 +1,3 @@
+# Explicit configuration avoids inheriting a developer's working-directory policy.
+spec_version: "0.2"
+fail_on: error

@@ -1,8 +1,8 @@
 # Configurable quality and reporting
 
-The development binary remains `okf-checker-dev`. Its `check` subcommand implements
-the local/CI contract; the public package/CLI name is still an owner decision (#14).
-Nothing here claims a published install or a license grant.
+The owner-approved binary is `okf-checker`. Its `check` subcommand implements
+the local/CI contract. Version 0.1.0 is prepared locally but has not been published.
+Nothing here claims a published install.
 
 ```sh
 node dist/cli.js check ./knowledge

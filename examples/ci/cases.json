@@ -1,0 +1,38 @@
+[
+  {
+    "name": "passing",
+    "bundle": "passing",
+    "policy": "default.yml",
+    "expectedExitCode": 0,
+    "expectedFindings": []
+  },
+  {
+    "name": "compliance-failure",
+    "bundle": "compliance-failure",
+    "policy": "default.yml",
+    "expectedExitCode": 1,
+    "expectedFindings": [{"ruleId": "C002", "layer": "compliance", "severity": "error"}]
+  },
+  {
+    "name": "quality-failure",
+    "bundle": "quality-failure",
+    "policy": "strict-links.yml",
+    "expectedExitCode": 1,
+    "expectedFindings": [{"ruleId": "Q002", "layer": "quality", "severity": "error"}]
+  },
+  {
+    "name": "quality-warning",
+    "bundle": "quality-failure",
+    "policy": "default.yml",
+    "expectedExitCode": 0,
+    "expectedFindings": [{"ruleId": "Q002", "layer": "quality", "severity": "warning"}]
+  },
+  {
+    "name": "quality-threshold",
+    "bundle": "quality-failure",
+    "policy": "default.yml",
+    "failOn": "warning",
+    "expectedExitCode": 1,
+    "expectedFindings": [{"ruleId": "Q002", "layer": "quality", "severity": "warning"}]
+  }
+]

@@ -6,7 +6,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { checkBundle, inspectCompliance, loadPolicy, OperationalError, renderReport } from './index.js';
-const HELP='Usage: okf-checker-dev check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error.\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nDevelopment identity only; final package and command name await release decisions.\n';
+const HELP='Usage: okf-checker check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error.\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nRelease candidate 0.1.0; npm publication is not yet authorized.\n';
 interface Options { root:string; format:'text'|'json'; configPath?:string; output?:string; failOn?:string }
 function argumentsFor(args:string[]):Options {
   if(args[0]!=='check'||!args[1]||args[1].startsWith('-'))throw new OperationalError('usage','Expected check and a bundle directory. Use --help.');

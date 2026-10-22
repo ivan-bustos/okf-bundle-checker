@@ -1,0 +1,4 @@
+spec_version: "0.2"
+fail_on: error
+rules:
+  Q002: error

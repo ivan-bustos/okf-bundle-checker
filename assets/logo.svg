@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="160" viewBox="0 0 720 160" role="img" aria-labelledby="title desc">
+  <title id="title">OKF Bundle Checker</title>
+  <desc id="desc">Linked document cards with a check mark, beside the OKF Bundle Checker wordmark.</desc>
+  <rect width="720" height="160" rx="24" fill="#f4f8fa"/>
+  <path d="M40 37h63l20 20v62H40z" fill="#b6d9e1"/>
+  <path d="M54 27h63l20 20v62H54z" fill="#527c96"/>
+  <path d="M68 17h56l25 25v84H68z" fill="#153f55"/>
+  <path d="M124 17v25h25" fill="#3d6b80"/>
+  <path d="M86 59h35M86 73h23" fill="none" stroke="#d9e9ee" stroke-width="5" stroke-linecap="round"/>
+  <path d="M53 126h41" fill="none" stroke="#527c96" stroke-width="5"/>
+  <circle cx="43" cy="126" r="10" fill="#153f55"/>
+  <circle cx="132" cy="112" r="29" fill="#058570" stroke="#f4f8fa" stroke-width="5"/>
+  <path d="m118 112 9 9 19-20" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="193" y="80" fill="#153f55" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700" font-size="53" letter-spacing="1">OKF</text>
+  <text x="195" y="117" fill="#31566a" font-family="DejaVu Sans,Arial,sans-serif" font-weight="600" font-size="27" letter-spacing="1.4">BUNDLE CHECKER</text>
+</svg>
