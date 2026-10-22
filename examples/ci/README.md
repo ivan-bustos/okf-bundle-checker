@@ -33,5 +33,5 @@ last two show that optional quality policy is not specification conformance.
 It uses the immutable workflow-event commit, the checked-in npm lockfile, and
 Node 22/24 across Linux, Windows and macOS. It is not evidence that every matrix
 job has passed and does not claim a published package is available. See
-[installation and CI](../../docs/installation-ci.md) for install gates, generic
+[installation and CI](../../docs/installation-ci.md) for pinned installation, generic
 Linux CI, report collection and the runtime-support boundary.

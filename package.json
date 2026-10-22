@@ -1,23 +1,28 @@
 {
   "name": "okf-bundle-checker",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0-alpha.1",
   "type": "module",
-  "description": "Offline Open Knowledge Format compliance and configurable quality checker",
+  "description": "Offline CLI and reusable engine for Open Knowledge Format v0.2 compliance and configurable knowledge-bundle quality checks.",
   "engines": {
     "node": "^22.0.0 || ^24.0.0"
   },
   "bin": {
     "okf-checker": "dist/cli.js"
   },
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
     "dist",
     "docs",
     "examples",
     "assets",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -44,5 +49,25 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ivan-bustos/okf-bundle-checker.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "homepage": "https://github.com/ivan-bustos/okf-bundle-checker#readme",
+  "bugs": {
+    "url": "https://github.com/ivan-bustos/okf-bundle-checker/issues"
+  },
+  "keywords": [
+    "okf",
+    "open-knowledge-format",
+    "knowledge-base",
+    "markdown",
+    "yaml",
+    "validator",
+    "cli",
+    "ci"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
   }
 }

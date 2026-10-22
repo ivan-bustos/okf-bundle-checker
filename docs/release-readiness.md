@@ -1,64 +1,84 @@
-# Release readiness: 0.1.0
+# Alpha status and validation boundaries
 
-This is a reviewable **unpublished release candidate**, not a package publication.
-The owner approved the following choices on October 22, 2026:
+`1.0.0-alpha.1` is the first alpha version of **OKF Bundle Checker**. This checkout
+prepares that version; it does not establish that an npm artifact or GitHub release
+is available. The [installation guide](installation-ci.md) includes source and
+local-package options that work independently of registry availability.
 
-| Item | Decision |
-|---|---|
-| Package | `okf-bundle-checker` |
-| Command | `okf-checker` |
-| Initial version | `0.1.0` |
-| License | MIT, see [LICENSE](../LICENSE) |
-| Intended registry | npm |
-| Supported runtime lines | Node 22 and 24 |
-| Tested OS matrix | Linux, Windows, macOS |
+| Item | Alpha target |
+| --- | --- |
+| Package / command | `okf-bundle-checker` / `okf-checker` |
+| Version | `1.0.0-alpha.1` |
+| License | [MIT](../LICENSE) |
+| Supported Node lines | 22 and 24 |
+| CI matrix | Linux, Windows and macOS, on both Node lines |
+| Specification | OKF v0.2, pinned to `0b87c52c6ef999286c745e19998fdfcd03d5dbee` |
+| Report format | JSON `schemaVersion: 1`, plus human-readable text |
 
-The package deliberately retains `private: true`. No credentials, npm namespace
-reservation, registry ownership, publication, tag, GitHub release or deployment
-has been created or authorized by this preparation. A package name in this table
-is a product decision, not a claim that it is available in npm. A later authorized
-publication must recheck ownership/availability and confirm the exact artifact.
+This is a prerelease, not a stable 1.0 API or production-readiness guarantee.
+Rules, configuration, programmatic interfaces and report details may change
+before the stable release. Pin the exact version and review the
+[changelog](../CHANGELOG.md) before upgrading.
 
-## Acceptance checklist
+## Implemented and covered by automated checks
 
-- [x] Audit the pinned OKF v0.2 source and distinguish normative hard rules from
-  configurable advice: [rule matrix](rule-matrix.md), [spec pin](spec-pin.json).
-- [x] Preserve custom types, extension metadata and absent optional families.
-- [x] Document all defaults, precedence, exclusions and rule severities:
-  [configuration](configuration.md).
-- [x] Distinguish completed below-threshold (0), completed findings (1), and
-  incomplete operational failures (2). Version report schema and tool identity.
-- [x] Add positive, negative, hostile, offline, deterministic, path and output tests:
-  [acceptance map](acceptance.md).
-- [x] Add runnable source/local-tarball and CI examples, with public installation
-  explicitly gated until a release exists: [installation and CI](installation-ci.md).
-- [x] Verify packed metadata, MIT license, original SVG logo, installed binary,
-  compliance and quality modes; test a temporary installation path containing spaces.
-- [x] Document bounded-input and stable-snapshot limitations: [limits](limits.md).
-- [ ] Confirm the final feature commit's complete CI matrix in the pull request
-  before approving this candidate for merge. Historical main/PR runs are not
-  substitutes for final-commit evidence.
-- [ ] Separately authorize and verify any actual publication. This is not required
-  to finish release preparation and remains outside this implementation task.
+- A narrow normative compliance core, C001–C003, separated from configurable
+  quality advice, Q001–Q009. Custom types, extensions and absent optional metadata
+  are accepted. See the [rule catalog](rules.md) and [normative audit](rule-matrix.md).
+- Explicit configuration precedence, scoped exclusions, fixed compliance errors
+  and configurable quality severities. See [configuration](configuration.md).
+- Deterministic JSON, readable text with optional color, and distinct exit codes
+  for completed below-threshold checks (0), completed findings (1) and incomplete
+  operational failures (2).
+- Synthetic positive, negative, hostile-input, offline, path-containment,
+  interrupted-output and deterministic-report cases. See the
+  [acceptance map](acceptance.md) and [compatibility contract](compatibility-contract.md).
+- Package-install smoke checks and runnable CI examples exercising both expected
+  passing and failing results. See [installation and CI](installation-ci.md).
 
-The final pull request records exact commit, CI links and current evidence.
-Run `npm ci --ignore-scripts && npm run check` from that revision to reproduce the
-checks. `npm run benchmark` records observations, not an SLA. Nothing here grants
-permission to merge or publish automatically.
+Reproduce the repository checks from this revision:
 
-## Out of scope
+```sh
+npm ci --ignore-scripts
+npm run check
+npm run smoke:ci
+```
 
-AI correctness judgments, automatic rewriting, hosted dashboards, external URL
-availability, Git-provider APIs during validation, attested execution, heading
-anchor validation, baselines and index generation remain excluded. Automatic PR
-comments, native annotations and SARIF are not part of this MVP. Structural
-validation does not establish that a document is true or its linked resources are safe.
+A configured matrix is not proof that a particular revision passed it. The
+[repository checks](https://github.com/ivan-bustos/okf-bundle-checker/actions/workflows/check.yml)
+provide results for individual commits; local Linux results do not establish
+Windows, macOS or another Node version's result. Historical measurements in the
+acceptance map describe their recorded snapshot, not a performance commitment
+for this alpha. `npm run benchmark` produces new observations for the current host.
+
+## Supported safety boundary
+
+Validation is offline, read-only and bounded by a documented
+[input profile](limits.md). It does not upload bundles, open linked computation
+resources, execute embedded content or check remote URL availability. Dependency
+installation and any CI artifact upload are separate operations.
+
+Use a stable local snapshot. Resource limits are not a hard CPU/memory sandbox,
+and portable filesystem checks do not protect against a hostile concurrent
+process racing path changes. Symlinks, special files, unsupported parser features
+and empty concept scopes are refused with operational exit 2 rather than reported
+as successfully validated. Reports can contain filenames, link targets and finding
+messages; handle them with the same care as the corresponding bundle metadata.
+
+## Not included in this alpha
+
+Factual correctness or trust judgments, automatic rewriting, hosted dashboards,
+computation execution or attestation, external URL availability, heading-anchor
+validation, baselines, index generation, automatic PR comments, native code
+annotations and SARIF output are outside the implemented scope.
+
+The [issue tracker](https://github.com/ivan-bustos/okf-bundle-checker/issues) records
+known work. For a bug report, include the checker/Node versions, OS, policy and
+a minimal synthetic reproduction, without private bundle content or secrets.
 
 ## Provenance and assets
 
-The logo in `assets/logo.svg` is original repository-native vector artwork, with
-no remote assets, scripts or fonts. README references it by a relative path, and
-packaged documentation includes it. It is covered by this repository's MIT license.
-The license text follows the [Open Source Initiative MIT template](https://opensource.org/license/mit).
-Shared compatibility fixtures remain synthetic and unchanged; private project
-bundles are not bundled in tests or documentation.
+The [specification pin](spec-pin.json) records its immutable source and checksum;
+validation does not download a moving upstream version. Compatibility and CI
+fixtures are synthetic. The original `assets/logo.svg` contains no remote assets,
+scripts or fonts and is covered by the repository's MIT license.

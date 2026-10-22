@@ -101,7 +101,7 @@ Q002 even though the file still exists outside the selected inventory.
 
 **Policy:** compliance; fixed `error` (`rules.C001: error` is the only accepted
 setting). Sources: [§4, §4.1, §11(1)][spec];
-[parser](../src/parser.ts) and [compliance implementation](../src/compliance.ts).
+[parser](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/parser.ts) and [compliance implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/compliance.ts).
 
 **Triggers:** a concept has invalid UTF-8, no opening frontmatter, no closing
 frontmatter delimiter, malformed YAML, duplicate YAML keys, or a YAML value that
@@ -139,7 +139,7 @@ start, and repair YAML syntax or duplicate keys at the reported position.
 ## C002: Required concept type
 
 **Policy:** compliance; fixed `error` (`rules.C002: error` only). Sources:
-[§4.1, §11(2)][spec]; [compliance implementation](../src/compliance.ts).
+[§4.1, §11(2)][spec]; [compliance implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/compliance.ts).
 
 **Triggers:** a successfully parsed concept mapping has no `type`, or `type`
 is not a string, is empty, or contains only whitespace. The finding points to
@@ -168,7 +168,7 @@ valid custom type with one of the specification's example types.
 
 **Policy:** compliance; fixed `error` (`rules.C003: error` only). Sources:
 [§3.1, §8, §9, §11(3), §12][spec];
-[compliance implementation](../src/compliance.ts) and
+[compliance implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/compliance.ts) and
 [interpretation audit](rule-matrix.md#version-and-ambiguity-decisions).
 
 **Triggers:** encoding/YAML structural diagnostics in an exact `index.md` or
@@ -222,7 +222,7 @@ entry groups. Do not add a `type` just to satisfy C002: C002 does not apply here
 configuration. `rules.C004` is invalid configuration and exits 2, regardless of
 the supplied severity. Sources: [§11, §12][spec],
 [normative audit](rule-matrix.md#hard-compliance-core), and
-[configuration implementation](../src/config.ts).
+[configuration implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/config.ts).
 
 An earlier design reserved C004 for conditional metadata compliance. That hard
 rule is **not implemented**: the audited decision assigns optional-family shape
@@ -242,7 +242,7 @@ finding this implementation does not emit.
 
 **Policy:** quality; default `warning`; configure `rules.Q001` as `off`,
 `warning`, or `error`. Sources: [§4.1][spec];
-[index-quality implementation](../src/index-quality.ts).
+[index-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/index-quality.ts).
 
 **Triggers:** a concept's `description` is missing, not a string, empty, or
 whitespace-only. This also runs on concepts with missing frontmatter, but skips
@@ -265,8 +265,8 @@ editorial policy. A missing description alone is not a compliance violation.
 
 **Policy:** quality; default `warning`; configure `rules.Q002` as `off`,
 `warning`, or `error`. Sources: [§6][spec];
-[parser](../src/parser.ts), [resolver](../src/resolver.ts), and
-[index-quality implementation](../src/index-quality.ts).
+[parser](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/parser.ts), [resolver](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/resolver.ts), and
+[index-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/index-quality.ts).
 
 **Triggers:** a parsed local Markdown link or image points to a file, asset, or
 directory absent from the selected inventory, or uses a path the safe resolver
@@ -318,7 +318,7 @@ resolve this rule: validation is offline.
 **Policy:** quality; default `warning`; configure `rules.Q003` as `off`,
 `warning`, or `error`. `index_scope: all` is the default; `root` checks only the
 root index. Sources: [§8][spec];
-[index-quality implementation](../src/index-quality.ts).
+[index-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/index-quality.ts).
 
 **Triggers:** root or an ancestor directory containing at least one scoped
 concept has no inventoried Markdown file at its exact `index.md` path. This
@@ -350,7 +350,7 @@ or Q005 for indexes that already exist.
 
 **Policy:** quality; default `warning`; configure `rules.Q004` as `off`,
 `warning`, or `error`; subject to `index_scope: all|root`. Sources:
-[§8][spec]; [index-quality implementation](../src/index-quality.ts).
+[§8][spec]; [index-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/index-quality.ts).
 
 **Triggers:** an existing index does not contain a resolving Markdown link to
 each immediate scoped concept and immediate child directory containing a scoped
@@ -388,7 +388,7 @@ source line for a link that is absent. Index prose quality is separately Q005.
 
 **Policy:** quality; default `warning`; configure `rules.Q005` as `off`,
 `warning`, or `error`; subject to `index_scope: all|root`. Sources:
-[§8][spec]; [index-quality implementation](../src/index-quality.ts).
+[§8][spec]; [index-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/index-quality.ts).
 
 **Triggers:** an index link in a list item, table row, or standalone paragraph
 has no meaningful descriptive text in that same entry outside its link labels.
@@ -450,7 +450,7 @@ resource availability, interpret source authenticity, or run code.
 
 **Policy:** quality; default `warning`; configure `rules.Q006` as `off`,
 `warning`, or `error`. Sources: [§5.1][spec];
-[metadata-quality implementation](../src/metadata-quality.ts).
+[metadata-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/metadata-quality.ts).
 
 **Triggers, when supplied:**
 
@@ -502,7 +502,7 @@ silence an optional rule.
 
 **Policy:** quality; default `warning`; configure `rules.Q007` as `off`,
 `warning`, or `error`. Sources: [§5.2, §7, §11][spec];
-[metadata-quality implementation](../src/metadata-quality.ts).
+[metadata-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/metadata-quality.ts).
 
 **Triggers, when supplied:** `generated` is not a mapping, its `by` is missing
 or not a non-empty string, or its optional `at` fails the shared timestamp
@@ -540,7 +540,7 @@ event's required `by`/`at`; a passing shape is not proof of verification.
 
 **Policy:** quality; default `warning`; configure `rules.Q008` as `off`,
 `warning`, or `error`. Sources: [§5.4–§5.5][spec];
-[metadata-quality implementation](../src/metadata-quality.ts).
+[metadata-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/metadata-quality.ts).
 
 **Triggers, when supplied:** `status` is anything other than the exact string
 `draft`, `stable`, or `deprecated`, or `stale_after` fails the shared timestamp
@@ -575,7 +575,7 @@ review freshness when your workflow requires it.
 
 **Policy:** quality; default `warning`; configure `rules.Q009` as `off`,
 `warning`, or `error`. Sources: [§10.2–§10.3, §6.2, §11][spec];
-[metadata-quality implementation](../src/metadata-quality.ts).
+[metadata-quality implementation](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/src/metadata-quality.ts).
 
 **Activation:** the type must be exactly `Attested Computation`, **and** at
 least one of `runtime`, `parameters`, `computation`, `executor`, or `attester`
@@ -643,11 +643,11 @@ Use Q009 as structural authoring guidance, not as an execution or security audit
 
 ## Implementation and regression evidence
 
-The catalog is backed by [compliance tests](../test/compliance.test.mjs),
-[index/link policy tests](../test/index-quality.test.mjs),
-[metadata tests](../test/metadata-quality.test.mjs),
-[resolver tests](../test/resolver.test.mjs), and
-[configuration tests](../test/config.test.mjs). Run `npm run check` for the
+The catalog is backed by [compliance tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/compliance.test.mjs),
+[index/link policy tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/index-quality.test.mjs),
+[metadata tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/metadata-quality.test.mjs),
+[resolver tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/resolver.test.mjs), and
+[configuration tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/config.test.mjs). Run `npm run check` for the
 repository's complete lint, type, test, and installed-package smoke checks.
 
 [spec]: https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/0b87c52c6ef999286c745e19998fdfcd03d5dbee/SPEC.md
