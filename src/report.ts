@@ -4,7 +4,7 @@ import type { QualityFinding, Policy } from './policy.js';
 export type Finding = ComplianceFinding | QualityFinding;
 export interface ScopeSummary { entries:number; concepts:number; documents:number; totalBytes:number; exclusions:string[]; excludedEntries:number }
 export interface Report {
-  schemaVersion:1; completed:true; tool:{name:'okf-bundle-checker';version:'0.1.0'}; specVersion:'0.2';
+  schemaVersion:1; completed:true; tool:{name:'okf-bundle-checker';version:'1.0.0-alpha.1'}; specVersion:'0.2';
   threshold:Policy['failOn']; rules:Policy['rules']; indexScope:Policy['indexScope']; scope:ScopeSummary;
   counts:{compliance:number;quality:number;errors:number;warnings:number}; findings:Finding[]; exitCode:0|1;
 }
@@ -14,7 +14,7 @@ export function orderedFindings(findings:Finding[]):Finding[] {
 export function createReport(scope:ScopeSummary,findings:Finding[],policy:Policy):Report {
   const sorted=orderedFindings(findings);
   const counts={compliance:sorted.filter(x=>x.layer==='compliance').length,quality:sorted.filter(x=>x.layer==='quality').length,errors:sorted.filter(x=>x.severity==='error').length,warnings:sorted.filter(x=>x.severity==='warning').length};
-  return {schemaVersion:1,completed:true,tool:{name:'okf-bundle-checker',version:'0.1.0'},specVersion:policy.specVersion,threshold:policy.failOn,rules:{...policy.rules},indexScope:policy.indexScope,scope,counts,findings:sorted,exitCode:counts.errors>0||(policy.failOn==='warning'&&counts.warnings>0)?1:0};
+  return {schemaVersion:1,completed:true,tool:{name:'okf-bundle-checker',version:'1.0.0-alpha.1'},specVersion:policy.specVersion,threshold:policy.failOn,rules:{...policy.rules},indexScope:policy.indexScope,scope,counts,findings:sorted,exitCode:counts.errors>0||(policy.failOn==='warning'&&counts.warnings>0)?1:0};
 }
 /** Escape source controls, direction changes and line separators before adding trusted styling. */
 export function safeText(text:string):string { return text.replace(/[\x00-\x1f\x7f-\x9f\u061c\u200e\u200f\u2028-\u202e\u2066-\u2069]/g,char=>`\\u${char.charCodeAt(0).toString(16).padStart(4,'0')}`); }

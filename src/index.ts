@@ -44,3 +44,6 @@ export async function checkBundle(root:string,policy:Policy=defaultPolicy(),sign
   await checkpoint();
   return createReport({entries:scope.entries.length,concepts:scope.conceptCount,documents:documents.length,totalBytes:scope.totalBytes,exclusions:scope.exclusions,excludedEntries:scope.excludedEntries},[...compliance,...quality],policy);
 }
+
+export type { Report, Finding, ScopeSummary } from './report.js';
+export type { Policy, Severity, QualityRuleId } from './policy.js';

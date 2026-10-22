@@ -1,82 +1,78 @@
-# Pinned installation and portable CI
+# Installation and portable CI
 
-## Release status and supported targets
+## Version and supported targets
 
-The intended npm package is `okf-bundle-checker`, command `okf-checker`, initial
-version `0.1.0`, licensed MIT. This repository is release preparation, not an npm
-publication: `private: true` remains a deliberate publication guard. No released
-registry version or package-name availability is claimed here. Do not run an
-unverified registry install or use `npx` to resolve the intended name implicitly.
+This guide targets **`okf-bundle-checker@1.0.0-alpha.1`**, with the command
+`okf-checker`. It is an alpha, not a stable 1.0 release. This checkout does not
+establish that the version is available on npm; the source and local-package
+options below work independently of registry availability.
 
-Node 22 and Node 24 are the validation matrix targets on Linux, Windows and macOS.
-The CLI is Node-based and uses no OS-specific validator executable. The package's
-Node engine range is an installation constraint, not evidence for untested major versions
-or every OS distribution. Claim a runtime/OS combination as verified only when its
-job passed for the exact release-candidate commit; a workflow definition is not a
-passing result. The source and local-package examples below work before publication.
+Use Node **22 or 24**. The CI matrix covers both Node lines on Linux, Windows and
+macOS. The CLI is Node-based and uses no OS-specific validator executable. The
+engine range does not establish support for untested Node majors or every OS
+version. Check the [CI results](https://github.com/ivan-bustos/okf-bundle-checker/actions/workflows/check.yml)
+for the exact revision: a configured matrix is not a passing result.
 
-The normative specification is also pinned: OKF v0.2 at
+Validation targets OKF v0.2 at
 `0b87c52c6ef999286c745e19998fdfcd03d5dbee`. The checked-in
 [`spec-pin.json`](spec-pin.json) records the source and checksum. Validation does
 not download that source or consult a moving branch.
 
-## Install from a reviewed source revision (Linux CI)
+## Run from source
 
-Start with an authorized checkout of this repository at a reviewed full commit
-SHA. Configure your CI checkout step with that immutable SHA, not `main`, a moving
-feature branch, or `latest`. The GitHub example uses its exact event commit
-(`${{ github.sha }}`); an external consuming project should supply its own reviewed
-checker commit. Keep `package-lock.json` from that same revision.
+Use a checkout or source archive for a reviewed revision of
+[this repository](https://github.com/ivan-bustos/okf-bundle-checker), with its
+matching `package-lock.json`. For reproducible CI, select an immutable full
+commit SHA rather than a moving branch. Record the revision with your build
+artifacts; in a Git checkout, `git rev-parse HEAD` reports it.
 
-From the checkout root, with Node 22 or 24 and npm available:
+From the source root, with Node 22 or 24 and npm available:
 
 ```sh
-# Record the actual immutable source identity in the build log/artifact metadata.
-git rev-parse HEAD
 npm ci --ignore-scripts
 npm run build
-node dist/cli.js check examples/ci/bundles/passing \
-  --config examples/ci/policies/default.yml
+node dist/cli.js check examples/ci/bundles/passing --config examples/ci/policies/default.yml
 node scripts/ci-example-smoke.mjs --output reports/ci-examples
 ```
 
-`npm ci` uses the checked-in lockfile and may access the npm registry for dependencies.
-After dependencies and the built CLI are present, validation is offline. There is
-no publishing credential, service account, external validator, or Git-provider API
-call in the check command. A checkout or dependency download is an installation
-step, not part of bundle validation. For network-isolated CI, provision the reviewed
-checkout, dependencies and runtime in the CI image or an approved dependency cache
-before disabling network access; installing an uncached package is not an offline
-operation.
-
-The same check used locally is used in CI:
+To check your own bundle, use the same command locally and in CI:
 
 ```sh
 node dist/cli.js check ./knowledge --config ./policy.yml
 ```
 
-Run from a known working directory. An explicit `--config` avoids accidentally
-inheriting a developer's `.okf-validator.yml`; see
-[configuration precedence](configuration.md). Do not place generated reports
-inside `./knowledge`.
+`./knowledge` and `./policy.yml` are your bundle and policy paths. Run from a known
+working directory. An explicit `--config` avoids inheriting an unintended
+`.okf-validator.yml`; see [configuration precedence](configuration.md). Point the
+command at the intended knowledge directory rather than a project root containing
+unrelated Markdown. Do not place generated reports inside the bundle.
 
-## Install a local, pinned package without publishing
+`npm ci` uses the checked-in lockfile and may access the registry. After dependencies
+and the built CLI are present, validation is offline. The check command requires
+no account credentials, external validator or Git-provider API.
+For isolated CI, provision the runtime, reviewed source and dependencies in the
+image or an approved cache before disabling the network. An uncached install is
+not an offline operation.
 
-A local npm tarball tests the real installed command while the package stays
-private. Build it from the reviewed source checkout, record its SHA-256 checksum,
-and retain that exact artifact rather than repacking an arbitrary branch later.
-This Linux example uses temporary paths and assumes the checkout has been built:
+## Install a local npm tarball
+
+A local tarball lets you use the installed command without a registry release.
+Build it from the reviewed source checkout or source archive and retain its
+checksum alongside that exact artifact. This **Linux shell** example runs
+from the source root:
 
 ```sh
+npm ci --ignore-scripts
+npm run build
 CHECKER_SOURCE="$PWD"
 PACKAGE_DIR="$(mktemp -d)"
 INSTALL_DIR="$(mktemp -d)"
-# Use a writable cache even in CI images without a writable home directory.
+# Use a writable cache in CI images without a writable home directory.
 export npm_config_cache="$INSTALL_DIR/npm-cache"
 npm pack --ignore-scripts --pack-destination "$PACKAGE_DIR"
-sha256sum "$PACKAGE_DIR/okf-bundle-checker-0.1.0.tgz"
+sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.1.tgz"
 npm install --ignore-scripts --no-audit --no-fund \
-  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-0.1.0.tgz"
+  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.1.tgz"
 "$INSTALL_DIR/node_modules/.bin/okf-checker" check \
   "$CHECKER_SOURCE/examples/ci/bundles/passing" \
   --config "$CHECKER_SOURCE/examples/ci/policies/default.yml"
@@ -85,41 +81,39 @@ node scripts/ci-example-smoke.mjs \
   --output reports/installed-ci-examples
 ```
 
-This installs only a local tarball for the checker itself; npm may still fetch its
-runtime dependencies. The source lockfile pins source builds, but a standalone
-`npm install` may resolve transitive dependencies again. For reproducible consumer
-installs, retain and review the consumer lockfile and artifact, then use `npm ci`
-with that lockfile. Installing a private local tarball does not publish it.
+The checker artifact is local; npm may still fetch its runtime dependencies. A
+standalone install can resolve transitive dependencies again. For reproducible
+consumer installs, retain the artifact and review the consuming project's lockfile,
+then use `npm ci --ignore-scripts` with that lockfile on subsequent runs.
 
-The underlying cross-platform invocation is
-`node <installation>/node_modules/okf-bundle-checker/dist/cli.js check <bundle>`.
-On Windows, an npm-generated `.bin` command shim ends in `.cmd`; the smoke runner
-uses `process.execPath` directly, so its behavior does not depend on shell shims.
-Temporary directories in this example can be removed once their artifacts and
-reports are no longer needed.
+The underlying cross-platform invocation is:
 
-## Published install template: blocked until a release exists
+```text
+node <installation>/node_modules/okf-bundle-checker/dist/cli.js check <bundle>
+```
 
-The following is deliberately gated and is NOT a working released-install claim.
-Only after separately authorized publication and verification of the actual release
-should the placeholder be replaced with its exact reviewed version. The planned
-`0.1.0` is not evidence that that version currently exists. Never substitute
-`latest`, a range, an unreviewed package, or an unverified namespace collision.
+On Windows, npm's `.bin` command shim ends in `.cmd`. The smoke runner invokes Node
+directly and does not depend on shell shims. The shell variables, `mktemp` and
+`sha256sum` above are Linux conveniences, not requirements of the checker. Remove
+temporary directories when their artifacts and reports are no longer needed.
+
+## Install from npm once the alpha is available
+
+The command below is conditional on **this exact version** being available from
+the project's npm package. Verify the package metadata points to this repository
+before installing it. If it is not available, use a source or local-tarball install
+above rather than selecting an unrelated package or an implicit `npx` download.
+
+From a consuming project, pin the version explicitly:
 
 ```sh
-CHECKER_RELEASE_VERSION='REPLACE_WITH_VERIFIED_PUBLISHED_VERSION'
-# Deliberately stops before npm until an exact release version has been selected.
-node -e 'if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(process.argv[1])) { console.error("No verified released checker version is configured."); process.exit(2); }' \
-  "$CHECKER_RELEASE_VERSION" || exit "$?"
-npm install --ignore-scripts --no-audit --no-fund --save-exact \
-  "okf-bundle-checker@$CHECKER_RELEASE_VERSION"
+npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0-alpha.1
 ./node_modules/.bin/okf-checker check ./knowledge --config ./policy.yml
 ```
 
-Commit the resulting approved consumer lockfile and use `npm ci --ignore-scripts`
-on later CI runs. The final released-install example must name the actual pinned
-published version and be revalidated before this gate is removed. This document
-and its examples do not grant publication approval or require npm publishing tokens.
+Retain the resulting consumer lockfile and use `npm ci --ignore-scripts` in CI.
+Do not rely on `latest` or a version range for a reproducible alpha installation.
+The same `check` flags, reports and exit codes apply to source and installed usage.
 
 ## Exit status and fixture evidence
 
@@ -197,4 +191,4 @@ bundle source bodies. The example workflow uploads only synthetic reports/logs.
 Validation does not upload bundles, check external URL availability, execute
 embedded computation, contact Git-provider APIs, post PR comments, create native
 code annotations or emit SARIF. Automatic PR comments, native annotations and SARIF
-remain outside this MVP. Structural checks are not a factual-correctness guarantee.
+remain outside this alpha. Structural checks are not a factual-correctness guarantee.

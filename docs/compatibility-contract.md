@@ -1,8 +1,8 @@
 # OKF compatibility contract
 
-Contract revision: `okf-tools-0.2-1`. Applies to the checker and the separately
-released [viewer](https://github.com/ivan-bustos/okf-bundle-viewer/issues/2).
-Neither product imports or requires the other's package or release.
+Contract revision: `okf-tools-0.2-1`. Describes checker behavior and interoperability
+expectations for independent viewer implementations. No shared runtime or
+synchronized release is required.
 
 ## Source and authority
 

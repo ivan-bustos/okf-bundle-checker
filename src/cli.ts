@@ -6,7 +6,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { checkBundle, inspectCompliance, loadPolicy, OperationalError, renderReport } from './index.js';
-const HELP='Usage: okf-checker check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nRelease candidate 0.1.0; npm publication is not yet authorized.\n';
+const HELP='Usage: okf-checker check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-alpha.1; early-access alpha, not a stability guarantee.\n';
 export type ColorMode='auto'|'always'|'never';
 export interface Presentation { isTTY?:boolean; env?:Readonly<Record<string,string|undefined>> }
 /** Explicit CLI choice wins; auto colors only an interactive stdout, never a report file. */

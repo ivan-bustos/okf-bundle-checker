@@ -1,8 +1,8 @@
 # Configurable quality and reporting
 
-The owner-approved binary is `okf-checker`. Its `check` subcommand implements
-the local/CI contract. Version 0.1.0 is prepared locally but has not been published.
-Nothing here claims a published install.
+The `okf-checker check` command implements the local/CI contract for the
+`1.0.0-alpha.1` alpha. See [installation and CI](installation-ci.md) for source,
+local-package and conditional npm installation options.
 
 ```sh
 node dist/cli.js check ./knowledge
