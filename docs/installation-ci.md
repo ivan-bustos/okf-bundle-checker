@@ -2,7 +2,7 @@
 
 ## Version and supported targets
 
-This guide targets **`okf-bundle-checker@1.0.0-alpha.1`**, with the command
+This guide targets **`okf-bundle-checker@1.0.0-alpha.2`**, with the command
 `okf-checker`. It is an alpha, not a stable 1.0 release. This checkout does not
 establish that the version is available on npm; the source and local-package
 options below work independently of registry availability.
@@ -17,6 +17,31 @@ Validation targets OKF v0.2 at
 `0b87c52c6ef999286c745e19998fdfcd03d5dbee`. The checked-in
 [`spec-pin.json`](spec-pin.json) records the source and checksum. Validation does
 not download that source or consult a moving branch.
+
+## Short invocation
+
+The current checkout accepts a directory directly, or defaults to the current
+working directory when omitted. This shorthand is available starting with alpha.2.
+
+```sh
+npx okf-bundle-checker@alpha ./knowledge
+# Run this only while your working directory is the intended bundle:
+npx okf-bundle-checker@alpha
+```
+
+These registry commands require an available alpha containing this change. A
+locally installed reviewed tarball can instead be selected offline with
+`npx --offline okf-bundle-checker ./knowledge`. Without a local installation,
+unqualified `npx okf-bundle-checker` resolves the registry's `latest` tag, not its
+`alpha` tag. For reproducible CI, use an exact available version rather than a
+moving tag. Do not substitute `npx check`: that is a different npm package.
+
+`okf-checker check <directory>` remains supported. Bare `check` and `inspect`
+are reserved commands; use `./check` or `./inspect` for directories with those
+names, and `./-bundle` for a directory beginning with a dash. Put the directory
+before options. Options-only invocation applies them to the current directory.
+Configuration lookup stays relative to the working directory, not the supplied
+bundle. There is no `--fix`; bundle contents are never rewritten.
 
 ## Run from source
 
@@ -70,9 +95,9 @@ INSTALL_DIR="$(mktemp -d)"
 # Use a writable cache in CI images without a writable home directory.
 export npm_config_cache="$INSTALL_DIR/npm-cache"
 npm pack --ignore-scripts --pack-destination "$PACKAGE_DIR"
-sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.1.tgz"
+sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.2.tgz"
 npm install --ignore-scripts --no-audit --no-fund \
-  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.1.tgz"
+  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.2.tgz"
 "$INSTALL_DIR/node_modules/.bin/okf-checker" check \
   "$CHECKER_SOURCE/examples/ci/bundles/passing" \
   --config "$CHECKER_SOURCE/examples/ci/policies/default.yml"
@@ -107,7 +132,7 @@ above rather than selecting an unrelated package or an implicit `npx` download.
 From a consuming project, pin the version explicitly:
 
 ```sh
-npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0-alpha.1
+npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0-alpha.2
 ./node_modules/.bin/okf-checker check ./knowledge --config ./policy.yml
 ```
 
