@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-alpha.2
+
+- Allow direct bundle-directory invocation and default to the current directory.
+- Preserve explicit `check` and legacy `inspect` commands, validation rules and exit codes.
+- Verify actual offline `npx` package-name resolution against installed tarballs.
+
 ## 1.0.0-alpha.1
 
 First alpha of OKF Bundle Checker. The version is prepared in this repository;

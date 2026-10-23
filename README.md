@@ -9,18 +9,34 @@ checker for local workflows and CI. Catch structural violations, broken local
 links and missing index coverage without uploading your bundle or executing its
 contents. Standards compliance and configurable quality advice stay separate.
 
-**First alpha: `1.0.0-alpha.1`.** This checkout prepares the alpha; it does not
+**Current alpha: `1.0.0-alpha.2`.** This checkout prepares the alpha; it does not
 claim an npm release is already available. Expect changes before a stable 1.0
 release. See the [changelog](CHANGELOG.md) and [alpha status](docs/release-readiness.md).
 
 ## Quick start
+
+When this version is available on npm, run the alpha without a global install:
+
+```sh
+npx okf-bundle-checker@alpha ./knowledge
+```
+
+Omit the directory to check the current directory. The `check` subcommand remains
+supported but is no longer required. Validation is read-only; there is no `--fix`.
+The shorthand is available starting with alpha.2.
+
+`npx okf-bundle-checker ./knowledge` also works with a locally installed package,
+or when the registry has a suitable `latest` version. For the prerelease, select
+`@alpha` or an exact version explicitly; an alpha tag is not a latest tag. The npm
+package name selects its single `okf-checker` binary automatically.
+
 
 Use Node **22 or 24**. From a checkout or extracted source archive of this version:
 
 ```sh
 npm ci --ignore-scripts
 npm run build
-node dist/cli.js check ./knowledge
+node dist/cli.js ./knowledge
 ```
 
 Replace `./knowledge` with your bundle directory, not an entire project that also
@@ -37,14 +53,14 @@ The CI matrix covers Node 22 and 24 on Linux, Windows and macOS.
 
 ```sh
 # Check with the default policy: compliance errors fail, quality warnings do not.
-node dist/cli.js check ./knowledge
+node dist/cli.js ./knowledge
 
 # Select a policy explicitly and save a machine-readable report outside the bundle.
-node dist/cli.js check ./knowledge --config ./policy.yml --format json --output ./okf-report.json
+node dist/cli.js ./knowledge --config ./policy.yml --format json --output ./okf-report.json
 
 # Fail on warnings too, or disable terminal styling.
-node dist/cli.js check ./knowledge --fail-on warning
-node dist/cli.js check ./knowledge --color never
+node dist/cli.js ./knowledge --fail-on warning
+node dist/cli.js ./knowledge --color never
 ```
 
 By default, the checker reads `.okf-validator.yml` from the working directory if

@@ -6,7 +6,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { checkBundle, inspectCompliance, loadPolicy, OperationalError, renderReport } from './index.js';
-const HELP='Usage: okf-checker check <bundle-directory> [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never]\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-alpha.1; early-access alpha, not a stability guarantee.\n';
+const HELP='Usage: okf-checker [bundle-directory] [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never]\nAlso: okf-checker check <bundle-directory> [options] (compatible explicit form).\nOmit the directory to check the current directory. Use ./check or ./inspect for folders with reserved command names.\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-alpha.2; early-access alpha, not a stability guarantee.\n';
 export type ColorMode='auto'|'always'|'never';
 export interface Presentation { isTTY?:boolean; env?:Readonly<Record<string,string|undefined>> }
 /** Explicit CLI choice wins; auto colors only an interactive stdout, never a report file. */
@@ -16,9 +16,14 @@ export function useColor(mode:ColorMode,isTTY:boolean,env:Readonly<Record<string
 }
 interface Options { root:string; format:'text'|'json'; color:ColorMode; configPath?:string; output?:string; failOn?:string }
 function argumentsFor(args:string[]):Options {
-  if(args[0]!=='check'||!args[1]||args[1].startsWith('-'))throw new OperationalError('usage','Expected check and a bundle directory. Use --help.');
-  const options:Options={root:args[1],format:'text',color:'auto'}; const used=new Set<string>();
-  for(let i=2;i<args.length;i+=2) {
+  let start=0; let root='.';
+  if(args[0]==='inspect')throw new OperationalError('usage','Expected inspect and one bundle directory. Use --help.');
+  if(args[0]==='check') {
+    if(!args[1]||args[1].startsWith('-'))throw new OperationalError('usage','Expected a bundle directory after check. Use --help.');
+    root=args[1];start=2;
+  } else if(args[0]&&!args[0].startsWith('-')) {root=args[0];start=1;}
+  const options:Options={root,format:'text',color:'auto'}; const used=new Set<string>();
+  for(let i=start;i<args.length;i+=2) {
     const key=args[i]; const value=args[i+1];
     if(!key||!value||value.startsWith('--')||used.has(key))throw new OperationalError('usage','Flags require one value and cannot be repeated.'); used.add(key);
     if(key==='--config')options.configPath=value;

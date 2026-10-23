@@ -1,7 +1,7 @@
 import {spawnSync} from 'node:child_process';
-import {mkdtemp,readFile,writeFile,readdir,rm} from 'node:fs/promises';
+import {mkdtemp,readFile,writeFile,readdir,cp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
-import {join,resolve} from 'node:path';
+import {join,resolve,dirname} from 'node:path';
 const npmCli=process.env.npm_execpath;
 if(!npmCli)throw new Error('Run package smoke through npm run smoke.');
 const root=await mkdtemp(join(tmpdir(),'okf checker package-'));
@@ -23,6 +23,18 @@ if(pkg.name!==source.name||pkg.version!==source.version||pkg.license!=='MIT'||pk
 for(const path of ['LICENSE','assets/logo.svg','README.md','CHANGELOG.md','dist/index.js','dist/index.d.ts'])if(!packed.files.some(f=>f.path===path))throw new Error('Missing package documentation asset');
 const installed=JSON.parse(run('npm',['exec','--offline','--','okf-checker','check',resolve('tests/fixtures/shared/valid-minimal'),'--format','json'],root));
 if(installed.tool.name!==source.name||installed.tool.version!==source.version||installed.exitCode!==0)throw new Error('Installed binary identity check failed');
+// Exercise npx itself, including package-name -> sole-bin inference, without registry fallback.
+const npxCli=join(dirname(npmCli),'npx-cli.js');
+const bundle=join(root,'knowledge folder');await cp(resolve('tests/fixtures/shared/valid-minimal'),bundle,{recursive:true});
+for(const selector of [source.name,`${source.name}@${source.version}`]) {
+  const direct=JSON.parse(run(process.execPath,[npxCli,'--offline','--ignore-scripts',selector,'./knowledge folder','--format','json'],root));
+  if(direct.tool.name!==source.name||direct.tool.version!==source.version||direct.exitCode!==0||direct.scope.concepts!==1)throw new Error('npx package-name shorthand failed');
+}
+const cwdText=run(process.execPath,[npxCli,'--offline','--ignore-scripts',source.name],bundle);
+const explicitText=run(process.execPath,[npxCli,'--offline','--ignore-scripts',source.name,'check','.'],bundle);
+if(cwdText!==explicitText)throw new Error('npx cwd default differs from explicit check');
+const cwdJson=JSON.parse(run(process.execPath,[npxCli,'--offline','--ignore-scripts',source.name,'--format','json'],bundle));
+if(cwdJson.scope.concepts!==1||cwdJson.exitCode!==0)throw new Error('npx options-only cwd check failed');
 const api=JSON.parse(run(process.execPath,['--input-type=module','-e',`const api=await import('okf-bundle-checker'); console.log(JSON.stringify({check:typeof api.checkBundle,render:typeof api.renderReport,policy:typeof api.defaultPolicy}));`],root));
 if(api.check!=='function'||api.render!=='function'||api.policy!=='function')throw new Error('Installed public ESM entrypoint failed');
 await writeFile(join(root,'consumer.mts'),`import {checkBundle,renderReport,defaultPolicy,type Policy,type Report} from 'okf-bundle-checker';\nconst policy:Policy=defaultPolicy();\nconst report:Report=await checkBundle('synthetic-bundle',policy);\nconst text:string=renderReport(report,'text',{color:false});\nvoid text;\n`);

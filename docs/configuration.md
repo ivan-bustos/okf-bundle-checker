@@ -1,7 +1,7 @@
 # Configurable quality and reporting
 
 The `okf-checker check` command implements the local/CI contract for the
-`1.0.0-alpha.1` alpha. See [installation and CI](installation-ci.md) for source,
+`1.0.0-alpha.2` alpha. See [installation and CI](installation-ci.md) for source,
 local-package and conditional npm installation options.
 
 ```sh

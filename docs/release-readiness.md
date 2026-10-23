@@ -1,6 +1,6 @@
 # Alpha status and validation boundaries
 
-`1.0.0-alpha.1` is the first alpha version of **OKF Bundle Checker**. This checkout
+`1.0.0-alpha.2` is an alpha version of **OKF Bundle Checker**. This checkout
 prepares that version; it does not establish that an npm artifact or GitHub release
 is available. The [installation guide](installation-ci.md) includes source and
 local-package options that work independently of registry availability.
@@ -8,7 +8,7 @@ local-package options that work independently of registry availability.
 | Item | Alpha target |
 | --- | --- |
 | Package / command | `okf-bundle-checker` / `okf-checker` |
-| Version | `1.0.0-alpha.1` |
+| Version | `1.0.0-alpha.2` |
 | License | [MIT](../LICENSE) |
 | Supported Node lines | 22 and 24 |
 | CI matrix | Linux, Windows and macOS, on both Node lines |
