@@ -1,9 +1,11 @@
 # Beta status and validation boundaries
 
-`1.0.0-beta.1` is a beta version of **OKF Bundle Checker**. This checkout
-prepares that version; it does not establish that an npm artifact or GitHub release
-is available. The [installation guide](installation-ci.md) includes source and
-local-package options that work independently of registry availability.
+`1.0.0-beta.1` is a published beta version of **OKF Bundle Checker**, available on
+[npm](https://www.npmjs.com/package/okf-bundle-checker/v/1.0.0-beta.1) and as a
+[GitHub prerelease](https://github.com/ivan-bustos/okf-bundle-checker/releases/tag/v1.0.0-beta.1).
+The npm `latest` and `beta` tags currently select this version. The default tag
+is a distribution choice, not a stable-release or production-readiness claim.
+The [installation guide](installation-ci.md) includes registry, source and local-package options.
 
 | Item | Beta target |
 | --- | --- |

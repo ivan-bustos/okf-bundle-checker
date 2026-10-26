@@ -3,9 +3,9 @@
 ## Version and supported targets
 
 This guide targets **`okf-bundle-checker@1.0.0-beta.1`**, with the command
-`okf-checker`. It is a beta prerelease, not a stable 1.0 release. This checkout does not
-establish that the version is available on npm; the source and local-package
-options below work independently of registry availability.
+`okf-checker`. It is published on npm and is a beta prerelease, not a stable 1.0
+release. Both `latest` and `beta` currently select beta.1. The source and
+local-package options below also work independently of registry availability.
 
 Use Node **22 or 24**. The CI matrix covers both Node lines on Linux, Windows and
 macOS. The CLI is Node-based and uses no OS-specific validator executable. The
@@ -24,17 +24,18 @@ The current checkout accepts a directory directly, or defaults to the current
 working directory when omitted. This shorthand is available starting with alpha.2.
 
 ```sh
+npx okf-bundle-checker ./knowledge
+# Explicitly follow the beta tag:
 npx okf-bundle-checker@beta ./knowledge
 # Run this only while your working directory is the intended bundle:
-npx okf-bundle-checker@beta
+npx okf-bundle-checker
 ```
 
-These registry commands require a published beta version. A
-locally installed reviewed tarball can instead be selected offline with
+A locally installed reviewed tarball can instead be selected offline with
 `npx --offline okf-bundle-checker ./knowledge`. Without a local installation,
 unqualified `npx okf-bundle-checker` resolves the registry's `latest` tag, not its
-`beta` tag. For reproducible CI, use an exact available version rather than a
-moving tag. Do not substitute `npx check`: that is a different npm package.
+`beta` tag; both tags currently select `1.0.0-beta.1`. For reproducible CI, use an
+exact version rather than a moving tag. Do not substitute `npx check`: that is a different npm package.
 
 `okf-checker check <directory>` remains supported. Bare `check` and `inspect`
 are reserved commands; use `./check` or `./inspect` for directories with those
@@ -122,12 +123,10 @@ directly and does not depend on shell shims. The shell variables, `mktemp` and
 `sha256sum` above are Linux conveniences, not requirements of the checker. Remove
 temporary directories when their artifacts and reports are no longer needed.
 
-## Install from npm once beta.1 is available
+## Install from npm
 
-The command below is conditional on **this exact version** being available from
-the project's npm package. Verify the package metadata points to this repository
-before installing it. If it is not available, use a source or local-tarball install
-above rather than selecting an unrelated package or an implicit `npx` download.
+Version `1.0.0-beta.1` is available from the project's npm package. Verify the
+package metadata points to this repository before installing it.
 
 From a consuming project, pin the version explicitly:
 
