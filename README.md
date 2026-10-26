@@ -9,16 +9,17 @@ checker for local workflows and CI. Catch structural violations, broken local
 links and missing index coverage without uploading your bundle or executing its
 contents. Standards compliance and configurable quality advice stay separate.
 
-**Current alpha: `1.0.0-alpha.2`.** This checkout prepares the alpha; it does not
-claim an npm release is already available. Expect changes before a stable 1.0
-release. See the [changelog](CHANGELOG.md) and [alpha status](docs/release-readiness.md).
+**Beta candidate: `1.0.0-beta.1`, promoted from published alpha.2.** Validation
+behavior is unchanged. This checkout prepares beta.1; npm availability is a
+separate release step. Expect changes before stable 1.0. See the
+[changelog](CHANGELOG.md) and [beta status](docs/release-readiness.md).
 
 ## Quick start
 
-When this version is available on npm, run the alpha without a global install:
+When this version is available on npm, run the beta without a global install:
 
 ```sh
-npx okf-bundle-checker@alpha ./knowledge
+npx okf-bundle-checker@beta ./knowledge
 ```
 
 Omit the directory to check the current directory. The `check` subcommand remains
@@ -27,7 +28,7 @@ The shorthand is available starting with alpha.2.
 
 `npx okf-bundle-checker ./knowledge` also works with a locally installed package,
 or when the registry has a suitable `latest` version. For the prerelease, select
-`@alpha` or an exact version explicitly; an alpha tag is not a latest tag. The npm
+`@beta` or an exact version explicitly; the beta tag is not the latest tag. The npm
 package name selects its single `okf-checker` binary automatically.
 
 
@@ -94,13 +95,13 @@ Custom types, extension metadata and absent optional metadata remain permitted.
 See the [rule-by-rule catalog](docs/rules.md) for examples and remediation, and
 [input limits](docs/limits.md) for the supported filesystem and parser profile.
 
-## Alpha boundaries
+## Beta boundaries
 
 Structural checks do not prove that knowledge is true or safe to act on. There
 are no AI judgments, rewrites, external URL checks, computation execution,
 heading-anchor checks, baselines, index generation, PR comments or SARIF output.
 Check a stable local snapshot, not a hostile concurrently changing filesystem.
-This alpha is not a production-readiness or performance guarantee.
+This beta is not a production-readiness or performance guarantee.
 
 [Report a bug](https://github.com/ivan-bustos/okf-bundle-checker/issues/new) with the
 checker version, Node version, OS, relevant policy and a small synthetic example.

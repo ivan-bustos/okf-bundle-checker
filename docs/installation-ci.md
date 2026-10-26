@@ -2,8 +2,8 @@
 
 ## Version and supported targets
 
-This guide targets **`okf-bundle-checker@1.0.0-alpha.2`**, with the command
-`okf-checker`. It is an alpha, not a stable 1.0 release. This checkout does not
+This guide targets **`okf-bundle-checker@1.0.0-beta.1`**, with the command
+`okf-checker`. It is a beta prerelease, not a stable 1.0 release. This checkout does not
 establish that the version is available on npm; the source and local-package
 options below work independently of registry availability.
 
@@ -24,16 +24,16 @@ The current checkout accepts a directory directly, or defaults to the current
 working directory when omitted. This shorthand is available starting with alpha.2.
 
 ```sh
-npx okf-bundle-checker@alpha ./knowledge
+npx okf-bundle-checker@beta ./knowledge
 # Run this only while your working directory is the intended bundle:
-npx okf-bundle-checker@alpha
+npx okf-bundle-checker@beta
 ```
 
-These registry commands require an available alpha containing this change. A
+These registry commands require a published beta version. A
 locally installed reviewed tarball can instead be selected offline with
 `npx --offline okf-bundle-checker ./knowledge`. Without a local installation,
 unqualified `npx okf-bundle-checker` resolves the registry's `latest` tag, not its
-`alpha` tag. For reproducible CI, use an exact available version rather than a
+`beta` tag. For reproducible CI, use an exact available version rather than a
 moving tag. Do not substitute `npx check`: that is a different npm package.
 
 `okf-checker check <directory>` remains supported. Bare `check` and `inspect`
@@ -95,9 +95,9 @@ INSTALL_DIR="$(mktemp -d)"
 # Use a writable cache in CI images without a writable home directory.
 export npm_config_cache="$INSTALL_DIR/npm-cache"
 npm pack --ignore-scripts --pack-destination "$PACKAGE_DIR"
-sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.2.tgz"
+sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0-beta.1.tgz"
 npm install --ignore-scripts --no-audit --no-fund \
-  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0-alpha.2.tgz"
+  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0-beta.1.tgz"
 "$INSTALL_DIR/node_modules/.bin/okf-checker" check \
   "$CHECKER_SOURCE/examples/ci/bundles/passing" \
   --config "$CHECKER_SOURCE/examples/ci/policies/default.yml"
@@ -122,7 +122,7 @@ directly and does not depend on shell shims. The shell variables, `mktemp` and
 `sha256sum` above are Linux conveniences, not requirements of the checker. Remove
 temporary directories when their artifacts and reports are no longer needed.
 
-## Install from npm once the alpha is available
+## Install from npm once beta.1 is available
 
 The command below is conditional on **this exact version** being available from
 the project's npm package. Verify the package metadata points to this repository
@@ -132,12 +132,12 @@ above rather than selecting an unrelated package or an implicit `npx` download.
 From a consuming project, pin the version explicitly:
 
 ```sh
-npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0-alpha.2
+npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0-beta.1
 ./node_modules/.bin/okf-checker check ./knowledge --config ./policy.yml
 ```
 
 Retain the resulting consumer lockfile and use `npm ci --ignore-scripts` in CI.
-Do not rely on `latest` or a version range for a reproducible alpha installation.
+Do not rely on `latest` or a version range for a reproducible prerelease installation.
 The same `check` flags, reports and exit codes apply to source and installed usage.
 
 ## Exit status and fixture evidence
@@ -216,4 +216,4 @@ bundle source bodies. The example workflow uploads only synthetic reports/logs.
 Validation does not upload bundles, check external URL availability, execute
 embedded computation, contact Git-provider APIs, post PR comments, create native
 code annotations or emit SARIF. Automatic PR comments, native annotations and SARIF
-remain outside this alpha. Structural checks are not a factual-correctness guarantee.
+remain outside this beta. Structural checks are not a factual-correctness guarantee.

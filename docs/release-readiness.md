@@ -1,14 +1,14 @@
-# Alpha status and validation boundaries
+# Beta status and validation boundaries
 
-`1.0.0-alpha.2` is an alpha version of **OKF Bundle Checker**. This checkout
+`1.0.0-beta.1` is a beta version of **OKF Bundle Checker**. This checkout
 prepares that version; it does not establish that an npm artifact or GitHub release
 is available. The [installation guide](installation-ci.md) includes source and
 local-package options that work independently of registry availability.
 
-| Item | Alpha target |
+| Item | Beta target |
 | --- | --- |
 | Package / command | `okf-bundle-checker` / `okf-checker` |
-| Version | `1.0.0-alpha.2` |
+| Version | `1.0.0-beta.1` |
 | License | [MIT](../LICENSE) |
 | Supported Node lines | 22 and 24 |
 | CI matrix | Linux, Windows and macOS, on both Node lines |
@@ -19,6 +19,11 @@ This is a prerelease, not a stable 1.0 API or production-readiness guarantee.
 Rules, configuration, programmatic interfaces and report details may change
 before the stable release. Pin the exact version and review the
 [changelog](../CHANGELOG.md) before upgrading.
+
+This beta promotes alpha.2 without changing validation behavior, the specification
+pin, configuration semantics or report schema. Only the release identity,
+prerelease tag and documentation change. Beta status does not imply new
+production or real-world acceptance evidence.
 
 ## Implemented and covered by automated checks
 
@@ -49,7 +54,7 @@ A configured matrix is not proof that a particular revision passed it. The
 provide results for individual commits; local Linux results do not establish
 Windows, macOS or another Node version's result. Historical measurements in the
 acceptance map describe their recorded snapshot, not a performance commitment
-for this alpha. `npm run benchmark` produces new observations for the current host.
+for this beta. `npm run benchmark` produces new observations for the current host.
 
 ## Supported safety boundary
 
@@ -65,7 +70,7 @@ and empty concept scopes are refused with operational exit 2 rather than reporte
 as successfully validated. Reports can contain filenames, link targets and finding
 messages; handle them with the same care as the corresponding bundle metadata.
 
-## Not included in this alpha
+## Not included in this beta
 
 Factual correctness or trust judgments, automatic rewriting, hosted dashboards,
 computation execution or attestation, external URL availability, heading-anchor

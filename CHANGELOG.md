@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-beta.1
+
+- Promote the published alpha.2 behavior to beta.1 without changing validation
+  rules, configuration, the OKF specification pin, report schema or exit codes.
+- Update package, CLI and report version identity and select the `beta` npm tag.
+- Refresh installation examples and prerelease documentation for beta.1.
+- Beta remains a prerelease, not a stability or production-readiness guarantee.
+  npm publication and the GitHub release are separate from this prepared version.
+
 ## 1.0.0-alpha.2
 
 - Allow direct bundle-directory invocation and default to the current directory.
@@ -48,5 +57,5 @@ this entry does not claim that an npm package or GitHub release is available.
   computation execution/attestation, heading-anchor checks, baselines, index
   generation, PR comments, native annotations or SARIF output.
 
-See [alpha status and validation boundaries](docs/release-readiness.md) and the
+See [prerelease status and validation boundaries](docs/release-readiness.md) and the
 [issue tracker](https://github.com/ivan-bustos/okf-bundle-checker/issues) for details.
