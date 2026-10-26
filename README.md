@@ -9,26 +9,27 @@ checker for local workflows and CI. Catch structural violations, broken local
 links and missing index coverage without uploading your bundle or executing its
 contents. Standards compliance and configurable quality advice stay separate.
 
-**Beta candidate: `1.0.0-beta.1`, promoted from published alpha.2.** Validation
-behavior is unchanged. This checkout prepares beta.1; npm availability is a
-separate release step. Expect changes before stable 1.0. See the
+**Published beta: `1.0.0-beta.1`, promoted from alpha.2.** Validation behavior
+is unchanged. npm’s `latest` and `beta` tags currently select this prerelease;
+being the default does not make it stable. Expect changes before stable 1.0. See the
 [changelog](CHANGELOG.md) and [beta status](docs/release-readiness.md).
 
 ## Quick start
 
-When this version is available on npm, run the beta without a global install:
+Run the published beta without a global install:
 
 ```sh
-npx okf-bundle-checker@beta ./knowledge
+npx okf-bundle-checker ./knowledge
 ```
 
 Omit the directory to check the current directory. The `check` subcommand remains
 supported but is no longer required. Validation is read-only; there is no `--fix`.
 The shorthand is available starting with alpha.2.
 
-`npx okf-bundle-checker ./knowledge` also works with a locally installed package,
-or when the registry has a suitable `latest` version. For the prerelease, select
-`@beta` or an exact version explicitly; the beta tag is not the latest tag. The npm
+Without a local installation, this resolves npm’s `latest` tag, currently beta.1.
+Use `npx okf-bundle-checker@beta ./knowledge` to explicitly follow the beta tag,
+or `npx okf-bundle-checker@1.0.0-beta.1 ./knowledge` to pin this version. An
+unqualified command can use an existing local installation instead. The npm
 package name selects its single `okf-checker` binary automatically.
 
 
@@ -46,7 +47,7 @@ contains unrelated Markdown. To try a bundled passing example, use
 
 The package name is `okf-bundle-checker` and the installed command is
 `okf-checker`. See [installation and CI](docs/installation-ci.md) for local
-tarball installation and the exact-version npm command to use once available.
+tarball installation and the exact-version npm command.
 Dependency installation may access npm; bundle validation works offline.
 The CI matrix covers Node 22 and 24 on Linux, Windows and macOS.
 
