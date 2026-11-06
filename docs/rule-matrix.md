@@ -34,7 +34,8 @@ external URL availability or computation correctness.
 ## Configurable quality catalog
 
 Each quality rule accepts `off`, `warning`, or `error`. Defaults below are
-`warning`; missing optional families alone do not trigger Q006–Q009. Unknown
+`warning` for Q001–Q009; Q010 is opt-in and defaults to `off`. Missing optional
+families alone do not trigger Q006–Q010. Unknown
 extension keys remain allowed. These IDs are frozen for subsequent tickets.
 
 | ID | Subject | Checks and source |
@@ -48,6 +49,8 @@ extension keys remain allowed. These IDs are frozen for subsequent tickets.
 | Q007 | Present trust metadata | `generated` mapping and its `by`; supplied timestamps; `verified` mapping-or-list of mappings with event `by`/`at`, allowing the bare mapping (§5.2/§7). No requirement to add trust metadata. |
 | Q008 | Present lifecycle metadata | Known status values if supplied, and explicitly offset ISO date-time forms for supplied stale_after/timestamps (§5.4–5.5). Absence of status means stable, not an error. |
 | Q009 | Present computation contract | For an `Attested Computation`, required runtime and documented parameter/executor/receipt/attester shapes; computation-path versus inline-body convention (§10.2–10.3). No resource is executed. Type-only concepts still pass compliance. |
+
+| Q010 | Freshness deadline (opt-in) | Flag a valid supplied `stale_after` when `now >= stale_after` (§5.5); one reference time per check, optionally fixed with `--now`. Missing or malformed values are not freshness findings. Q008 remains responsible for syntax. |
 
 Timestamp or optional-field issues are advisory regardless of uppercase REQUIRED
 in §5/§10: §11's conformance summary deliberately limits rejection. Structural
@@ -86,6 +89,6 @@ The shared fixture manifest covers minimal custom-type concepts, extension keys,
 root-version indexes, reserved-file misuse, missing type/frontmatter, broken
 links, optional metadata shape, nested paths, directory links and code examples.
 Runtime tests add malformed encodings, YAML resource exhaustion, filesystem
-containment and deterministic source locations. The quality/configuration batch implements Q001–Q009; runtime tests cover
+containment and deterministic source locations. The quality/configuration batch implements Q001–Q010; runtime tests cover
 severity selection, optional families and index/link interpretations. See
 configuration.md for the implemented policy and batch-7-11.md for remaining gates.

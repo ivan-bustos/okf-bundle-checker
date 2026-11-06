@@ -69,7 +69,7 @@ By default, the checker reads `.okf-validator.yml` from the working directory if
 present. `--config` selects a different file. Text reports group findings by
 severity and path, with locations, rule IDs and suggested fixes. Color is automatic
 for interactive terminals; `--color always|never|auto` controls it explicitly.
-JSON reports are deterministic and never colored.
+JSON reports are deterministic for the same inputs and reference time, and never colored.
 
 | Exit | Meaning |
 | --- | --- |
@@ -88,6 +88,10 @@ directory must already exist outside the bundle. See the
 - **Quality, Q001–Q009:** descriptions, local links, directory indexes, index
   coverage and supplied metadata shapes. Each rule accepts `off`, `warning` or
   `error`. Promoting quality to an error does not make it standards noncompliance.
+- **Opt-in freshness, Q010:** flag concepts at or past their `stale_after` deadline.
+  Off by default; use warning or error severity and an optional fixed clock.
+  This is an unreleased source-checkout feature, not in the published beta.1.
+  See [freshness configuration](docs/configuration.md#opt-in-freshness-and-reproducible-checks).
 - **Bounded, read-only validation:** no followed bundle symlinks, no execution of
   YAML or Markdown content, case-sensitive logical links and reports written
   outside the bundle.

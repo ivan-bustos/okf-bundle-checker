@@ -21,6 +21,7 @@ export async function runCiExamples({cliPath=join(root,'dist','cli.js'),outputDi
     // An operational failure must never leave an earlier successful report as evidence.
     await rm(reportPath,{force:true});
     const args=[entry,'check',join(exampleRoot,'bundles',example.bundle),'--config',join(exampleRoot,'policies',example.policy),'--format','json','--output',reportPath];
+    if(example.now)args.push('--now',example.now);
     if(example.failOn)args.push('--fail-on',example.failOn);
     const result=spawnSync(process.execPath,args,{cwd:root,encoding:'utf8',timeout:30000,maxBuffer:2*1024*1024,windowsHide:true});
     await writeFile(join(output,`${example.name}.stdout.log`),result.stdout??'','utf8');
@@ -39,6 +40,7 @@ export async function runCiExamples({cliPath=join(root,'dist','cli.js'),outputDi
       assert.equal(report.exitCode,result.status,'JSON and process exit status must agree');
       assert.equal(report.scope.concepts,1);
       assert.equal(report.specVersion,'0.2');
+      if(example.now)assert.deepEqual(report.freshness,report.rules.Q010==='off'?undefined:{evaluatedAt:example.now});
       assert.deepEqual(report.findings.map(({ruleId,layer,severity})=>({ruleId,layer,severity})),example.expectedFindings);
       assert.equal(report.counts.compliance,example.expectedFindings.filter(finding=>finding.layer==='compliance').length);
       assert.equal(report.counts.quality,example.expectedFindings.filter(finding=>finding.layer==='quality').length);

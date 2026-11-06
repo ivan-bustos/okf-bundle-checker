@@ -1,0 +1,3 @@
+# Opt-in warning alone is advisory; use --fail-on warning for a gate.
+rules:
+  Q010: warning

@@ -16,12 +16,18 @@ test('documented CI examples prove passing, compliance and explicit quality gate
       {name:'compliance-failure',actualExitCode:1},
       {name:'quality-failure',actualExitCode:1},
       {name:'quality-warning',actualExitCode:0},
-      {name:'quality-threshold',actualExitCode:1}
+      {name:'quality-threshold',actualExitCode:1},
+      {name:'freshness-default',actualExitCode:0},
+      {name:'freshness-strict',actualExitCode:1},
+      {name:'freshness-warning',actualExitCode:0},
+      {name:'freshness-threshold',actualExitCode:1}
     ]);
     assert.deepEqual(JSON.parse(await readFile(join(outputDirectory,'summary.json'),'utf8')),summary);
+    const stale=await readFile(join(outputDirectory,'freshness-strict.json'),'utf8');
     const first=await readFile(join(outputDirectory,'quality-failure.json'),'utf8');
     await runCiExamples({outputDirectory});
     assert.equal(await readFile(join(outputDirectory,'quality-failure.json'),'utf8'),first,'Identical example checks produce identical reports');
+    assert.equal(await readFile(join(outputDirectory,'freshness-strict.json'),'utf8'),stale,'Fixed-clock freshness reports must be reproducible');
     const report=JSON.parse(first);
     assert.equal(report.findings[0].path,'missing.md');
     assert.equal(report.findings[0].source.path,'concept.md');

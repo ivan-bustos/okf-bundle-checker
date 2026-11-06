@@ -169,7 +169,12 @@ Do not put those three commands under an unconditional `set -e` and expect all
 three to run. Use the smoke runner to assert the intentional failures, or capture
 each status explicitly. The runner also verifies the broken-link bundle exits 0
 under default warning severity, and exits 1 with `--fail-on warning` without
-changing its quality layer. Its own exit code is 0 only when all expected results
+changing its quality layer. Fixed-clock freshness cases additionally prove that
+a reached deadline passes by default and fails only under an opted-in Q010 gate.
+See [freshness configuration](configuration.md#opt-in-freshness-and-reproducible-checks);
+this feature is not in the published beta.1. The runner
+also checks those cases against the locally installed tarball during `npm run smoke`.
+Its own exit code is 0 only when all expected results
 and reports match, otherwise 1. This harness exit is distinct from checker exit 2.
 
 [`examples/ci/github-actions.yml`](../examples/ci/github-actions.yml) demonstrates

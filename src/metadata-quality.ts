@@ -1,5 +1,7 @@
 import type { PhrasingContent, RootContent } from 'mdast';
 import type { ParsedDocument, SourcePosition } from './parser.js';
+import { atOrAfter, parseTimestamp } from './timestamp.js';
+import type { Timestamp } from './timestamp.js';
 import type { QualityFinding, QualityRuleId, Severity } from './policy.js';
 
 type Mapping = Record<string, unknown>;
@@ -7,24 +9,6 @@ const mapping = (value: unknown): value is Mapping => typeof value === 'object' 
 const nonempty = (value: unknown): value is string => typeof value === 'string' && value.trim() !== '';
 const has = (value: Mapping, key: string): boolean => Object.hasOwn(value, key);
 const computationKeys = ['runtime', 'parameters', 'computation', 'executor', 'attester'];
-
-/** Calendar datetimes with an explicit ISO 8601 UTC offset; never infer a local zone. */
-function timestamp(value: unknown): boolean {
-  if (typeof value !== 'string') return false;
-  // ISO permits basic or extended calendar/time forms, omitted seconds, fractional
-  // seconds, and offsets written as +hh, +hhmm, or +hh:mm. Do not impose RFC 3339.
-  const match = /^(\d{4})(-?)(\d{2})\2(\d{2})T(\d{2})(:?)(\d{2})(?:\6(\d{2})(?:[.,](\d+))?)?(Z|[+-](\d{2})(?::?(\d{2}))?)$/.exec(value);
-  if (!match) return false;
-  const [, yearText, , monthText, dayText, hourText, , minuteText, secondText, fraction, , offsetHour, offsetMinute] = match;
-  const year = Number(yearText), month = Number(monthText), day = Number(dayText);
-  const hour = Number(hourText), minute = Number(minuteText), second = Number(secondText ?? 0);
-  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return month >= 1 && month <= 12 && day >= 1 && day <= (days[month - 1] ?? 0)
-    && hour <= 24 && minute <= 59 && second <= 60
-    && (hour !== 24 || (minute === 0 && second === 0 && !/[1-9]/.test(fraction ?? '')))
-    && Number(offsetHour ?? 0) <= 23 && Number(offsetMinute ?? 0) <= 59;
-}
 
 function nodeText(node: RootContent | PhrasingContent): string {
   if ('value' in node) return node.value;
@@ -52,7 +36,7 @@ function inlineComputation(doc: ParsedDocument): { count: number; position?: Sou
 }
 
 /** Optional quality guidance only. No resource is opened, fetched, or executed. */
-export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, Severity>): QualityFinding[] {
+export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, Severity>, now?: Timestamp): QualityFinding[] {
   const data = doc.frontmatter.data;
   if (doc.kind !== 'concept' || doc.frontmatter.state !== 'mapping' || !data || doc.diagnostics.length > 0) return [];
   const findings: QualityFinding[] = [];
@@ -73,7 +57,7 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
     }
   };
   const timeField = (rule: QualityRuleId, object: Mapping, key: string, field: string, section: string, required = false): void => {
-    if ((required || has(object, key)) && !timestamp(object[key])) {
+    if ((required || has(object, key)) && !parseTimestamp(object[key])) {
       add(rule, field, section, 'must be an ISO 8601 datetime with an explicit UTC offset', `Use a calendar datetime such as 2026-06-30T14:00:00Z for ${field}.`);
     }
   };
@@ -131,6 +115,13 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
       add('Q008', 'status', '§5.4', 'must be draft, stable, or deprecated', 'Use a documented status value, or omit status to mean stable.');
     }
     timeField('Q008', data, 'stale_after', 'stale_after', '§5.5');
+  }
+
+  if ((rules.Q010 === 'warning' || rules.Q010 === 'error') && now) {
+    const deadline = parseTimestamp(data.stale_after);
+    if (deadline && atOrAfter(now, deadline)) {
+      add('Q010', 'stale_after', '§5.5', 'has reached its freshness deadline', 'Review and refresh the concept before extending its stale_after deadline.');
+    }
   }
 
   // A type-only concept has no computation family to assess (§11). Custom

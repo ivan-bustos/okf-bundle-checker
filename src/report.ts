@@ -6,15 +6,16 @@ export interface ScopeSummary { entries:number; concepts:number; documents:numbe
 export interface Report {
   schemaVersion:1; completed:true; tool:{name:'okf-bundle-checker';version:'1.0.0-beta.1'}; specVersion:'0.2';
   threshold:Policy['failOn']; rules:Policy['rules']; indexScope:Policy['indexScope']; scope:ScopeSummary;
+  freshness?: {evaluatedAt:string};
   counts:{compliance:number;quality:number;errors:number;warnings:number}; findings:Finding[]; exitCode:0|1;
 }
 export function orderedFindings(findings:Finding[]):Finding[] {
   return [...findings].sort((a,b)=>comparePaths(a.path,b.path)||(a.position?.line??0)-(b.position?.line??0)||(a.position?.column??0)-(b.position?.column??0)||comparePaths(a.ruleId,b.ruleId)||comparePaths(a.message,b.message)||comparePaths(a.remediation,b.remediation)||comparePaths('source' in a?a.source?.path??'':'','source' in b?b.source?.path??'':'')||('source' in a?a.source?.position?.line??0:0)-('source' in b?b.source?.position?.line??0:0)||('source' in a?a.source?.position?.column??0:0)-('source' in b?b.source?.position?.column??0:0));
 }
-export function createReport(scope:ScopeSummary,findings:Finding[],policy:Policy):Report {
+export function createReport(scope:ScopeSummary,findings:Finding[],policy:Policy,freshness?:Report['freshness']):Report {
   const sorted=orderedFindings(findings);
   const counts={compliance:sorted.filter(x=>x.layer==='compliance').length,quality:sorted.filter(x=>x.layer==='quality').length,errors:sorted.filter(x=>x.severity==='error').length,warnings:sorted.filter(x=>x.severity==='warning').length};
-  return {schemaVersion:1,completed:true,tool:{name:'okf-bundle-checker',version:'1.0.0-beta.1'},specVersion:policy.specVersion,threshold:policy.failOn,rules:{...policy.rules},indexScope:policy.indexScope,scope,counts,findings:sorted,exitCode:counts.errors>0||(policy.failOn==='warning'&&counts.warnings>0)?1:0};
+  return {schemaVersion:1,completed:true,tool:{name:'okf-bundle-checker',version:'1.0.0-beta.1'},specVersion:policy.specVersion,threshold:policy.failOn,rules:{...policy.rules},indexScope:policy.indexScope,scope,...(freshness?{freshness}:{}),counts,findings:sorted,exitCode:counts.errors>0||(policy.failOn==='warning'&&counts.warnings>0)?1:0};
 }
 /** Escape source controls, direction changes and line separators before adding trusted styling. */
 export function safeText(text:string):string { return text.replace(/[\x00-\x1f\x7f-\x9f\u061c\u200e\u200f\u2028-\u202e\u2066-\u2069]/g,char=>`\\u${char.charCodeAt(0).toString(16).padStart(4,'0')}`); }
@@ -46,6 +47,7 @@ export function renderReport(report:Report,format:'text'|'json',options:{color?:
     '',
     style('Rule counts:','heading'),
   ];
+  if(report.freshness)lines.splice(2,0,safeText(`Freshness evaluated at: ${report.freshness.evaluatedAt}`));
   const counts=ruleCounts(report.findings);
   for(const rule of counts) lines.push(`  ${style(safeText(`${rule.ruleId} ${rule.layer}/${rule.severity}`),rule.severity)}: ${rule.count} ${rule.count===1?'finding':'findings'}`);
   if(counts.length===0) lines.push('  (none)');
