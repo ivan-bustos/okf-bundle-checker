@@ -27,6 +27,7 @@ See the [pin and checksum](spec-pin.json), [normative audit](rule-matrix.md),
 | [Q007](#q007-generation-and-verification-metadata) | Supplied trust metadata | Quality, warning |
 | [Q008](#q008-lifecycle-metadata) | Supplied lifecycle metadata | Quality, warning |
 | [Q009](#q009-attested-computation-contract) | Supplied computation contract | Quality, warning |
+| [Q010](#q010-freshness-deadline) | Reached freshness deadline (opt-in) | Quality, off |
 
 ## Severity, scope, and finding locations
 
@@ -34,8 +35,9 @@ See the [pin and checksum](spec-pin.json), [normative audit](rule-matrix.md),
   are always `error`; configuration can restate that severity but cannot disable
   or demote them. The C003 interpretation choices are documented below.
 - **Quality** is optional guidance, even where a metadata subsection describes a
-  field as required within that family. Q001–Q009 each accept `off`, `warning`,
-  or `error` under `rules`. Selecting `error` does not change `layer: quality`
+  field as required within that family. Q001–Q010 each accept `off`, `warning`,
+  or `error` under `rules`. Q010 defaults to off; Q001–Q009 remain warning.
+  Selecting `error` does not change `layer: quality`
   into a standards violation. `off` suppresses that rule's findings.
 - **Failure threshold** is separate from rule severity. The default `fail_on:
   error` fails a completed check only on errors. `fail_on: warning` fails on
@@ -46,7 +48,7 @@ See the [pin and checksum](spec-pin.json), [normative audit](rule-matrix.md),
   `index.md` and `log.md` are reserved at every depth. For example, `Index.md`
   is a concept, while `notes.MD` is an asset. No rule rewrites input files.
 - **Index scope** defaults to `all`. `index_scope: root` limits Q003–Q005 to
-  root `index.md`; it does not narrow compliance, Q001, Q002, or Q006–Q009.
+  root `index.md`; it does not narrow compliance, Q001, Q002, or Q006–Q010.
 - **Locations** use bundle-relative paths and one-based line/column values when
   available. Metadata findings point to the top-level metadata key, not
   necessarily the nested field named in the message. Q002 distinguishes the
@@ -422,7 +424,7 @@ or table row, rather than borrowing a nested child's description.
 
 ## Shared optional-metadata behavior
 
-Q006–Q009 inspect only concept documents with a successfully parsed frontmatter
+Q006–Q010 inspect only concept documents with a successfully parsed frontmatter
 mapping and no parser diagnostics. They do not run on indexes or logs. Unknown
 extension fields are permitted, and missing optional families alone are not
 findings. Explicit `null` is a supplied value and may fail its field's shape.
@@ -547,8 +549,8 @@ event's required `by`/`at`; a passing shape is not proof of verification.
 predicate. Values are not trimmed or case-folded.
 
 **Does not check:** whether a concept is currently stale, whether a chosen
-deadline is sensible, or whether its content deserves its status. There is no
-clock-based warning or configurable freshness threshold. Absent `status` has
+deadline is sensible, or whether its content deserves its status. Opt-in Q010
+checks the clock separately; Q008 remains syntax-only. Absent `status` has
 the specification's stable default and is not a finding. This rule does not
 duplicate source timestamps (Q006) or event timestamps (Q007), and does not
 validate arbitrary extension fields named `created_at` or similar.
@@ -568,8 +570,8 @@ stale_after: '2026-11-01T00:00:00Z'
 ```
 
 **Fix:** correct or omit the optional metadata as appropriate. A past but
-well-formed `stale_after` is accepted by this structural rule; separately
-review freshness when your workflow requires it.
+well-formed `stale_after` is accepted by this structural rule; opt into Q010
+when your workflow also requires a freshness check.
 
 ## Q009: Attested Computation contract
 
@@ -641,11 +643,53 @@ SELECT 1 AS example_count;
 as field-name lists, and choose a computation reference **or** one inline block.
 Use Q009 as structural authoring guidance, not as an execution or security audit.
 
+## Q010: Freshness deadline
+
+**Policy:** quality; default `off`; configure `rules.Q010` as `off`, `warning`,
+or `error`. This is an **unreleased source-checkout feature**, not in published
+beta.1. Source: [§5.5][spec].
+
+**Triggers:** a valid supplied `stale_after` has been reached or passed:
+`now >= stale_after`. Equality is stale. The rule uses one reference instant for
+all scoped concepts, regardless of status. It points to the `stale_after` field.
+
+**Does not check:** factual accuracy, how long knowledge should remain valid,
+missing deadlines, malformed deadline syntax (owned by Q008), other timestamps,
+verification authenticity, or whether a deadline should be extended. It does not
+change Q008 or require optional metadata. Missing/malformed deadlines produce no
+Q010 finding, even when Q008 is off. Reserved and unparseable documents are skipped
+under the shared metadata rules.
+
+**Clock and ISO forms:** the default is one system-clock sample at check start.
+`--now <ISO datetime>` or the engine's `{now}` option fixes it for a reproducible
+check. Explicit offsets are compared as instants; accepted Q008 basic/extended
+forms, omitted seconds, dot/comma fractions and numeric-offset forms remain
+supported. Fractional digits are compared exactly. Under the documented POSIX
+convention, hour 24 rolls to the next day and accepted second 60 rolls to the next
+minute, without consulting a leap-second table. The reference instant is recorded
+in `freshness.evaluatedAt` only when Q010 is enabled. See
+[freshness configuration](configuration.md#opt-in-freshness-and-reproducible-checks).
+
+**Example:** at `--now 2026-06-30T14:00:00Z`, this is stale:
+
+```yaml
+stale_after: '2026-06-30T19:30:00+05:30'
+```
+
+The default policy emits nothing for this well-formed deadline. `Q010: error`
+emits a quality/error finding and exits 1. `Q010: warning` emits quality/warning
+and exits 0 unless the failure threshold is warning. A reference instant before
+the deadline emits no freshness finding.
+
+**Fix:** review and refresh the concept before moving its deadline. A later date
+alone does not prove the knowledge is current; the checker never edits it for you.
+
 ## Implementation and regression evidence
 
 The catalog is backed by [compliance tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/compliance.test.mjs),
 [index/link policy tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/index-quality.test.mjs),
 [metadata tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/metadata-quality.test.mjs),
+[freshness tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/freshness.test.mjs),
 [resolver tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/resolver.test.mjs), and
 [configuration tests](https://github.com/ivan-bustos/okf-bundle-checker/blob/main/test/config.test.mjs). Run `npm run check` for the
 repository's complete lint, type, test, and installed-package smoke checks.

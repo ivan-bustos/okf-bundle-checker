@@ -6,7 +6,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { checkBundle, inspectCompliance, loadPolicy, OperationalError, renderReport } from './index.js';
-const HELP='Usage: okf-checker [bundle-directory] [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never]\nAlso: okf-checker check <bundle-directory> [options] (compatible explicit form).\nOmit the directory to check the current directory. Use ./check or ./inspect for folders with reserved command names.\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-beta.1; beta prerelease, not a stability guarantee.\n';
+const HELP='Usage: okf-checker [bundle-directory] [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never] [--now <datetime>]\nAlso: okf-checker check <bundle-directory> [options] (compatible explicit form).\nOmit the directory to check the current directory. Use ./check or ./inspect for folders with reserved command names.\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nFreshness Q010 is opt-in; --now fixes its clock to an ISO datetime with an explicit offset.\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-beta.1; beta prerelease, not a stability guarantee.\n';
 export type ColorMode='auto'|'always'|'never';
 export interface Presentation { isTTY?:boolean; env?:Readonly<Record<string,string|undefined>> }
 /** Explicit CLI choice wins; auto colors only an interactive stdout, never a report file. */
@@ -14,7 +14,7 @@ export function useColor(mode:ColorMode,isTTY:boolean,env:Readonly<Record<string
   if(mode!=='auto')return mode==='always';
   return !outputFile&&isTTY&&env.TERM!=='dumb'&&!env.NO_COLOR;
 }
-interface Options { root:string; format:'text'|'json'; color:ColorMode; configPath?:string; output?:string; failOn?:string }
+interface Options { root:string; format:'text'|'json'; color:ColorMode; configPath?:string; output?:string; failOn?:string; now?:string }
 function argumentsFor(args:string[]):Options {
   let start=0; let root='.';
   if(args[0]==='inspect')throw new OperationalError('usage','Expected inspect and one bundle directory. Use --help.');
@@ -28,6 +28,7 @@ function argumentsFor(args:string[]):Options {
     if(!key||!value||value.startsWith('--')||used.has(key))throw new OperationalError('usage','Flags require one value and cannot be repeated.'); used.add(key);
     if(key==='--config')options.configPath=value;
     else if(key==='--output')options.output=value;
+    else if(key==='--now')options.now=value;
     else if(key==='--fail-on')options.failOn=value;
     else if(key==='--color'&&(value==='auto'||value==='always'||value==='never'))options.color=value;
     else if(key==='--format'&&(value==='text'||value==='json'))options.format=value;
@@ -66,7 +67,7 @@ export async function run(args:string[],out:(text:string)=>void|Promise<void>,er
     }
     const options=argumentsFor(args);
     const policy=await loadPolicy({...options.configPath!==undefined?{configPath:options.configPath}:{},...options.failOn!==undefined?{failOn:options.failOn}:{}});
-    const report=await checkBundle(options.root,policy,signal);const text=renderReport(report,options.format,{color:useColor(options.color,presentation.isTTY===true,presentation.env??{},options.output!==undefined)});
+    const report=await checkBundle(options.root,policy,signal,options.now===undefined?{}:{now:options.now});const text=renderReport(report,options.format,{color:useColor(options.color,presentation.isTTY===true,presentation.env??{},options.output!==undefined)});
     await setImmediate();await setImmediate();if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before report publication.');
     if(options.output!==undefined)await writeReport(options.output,text,options.root,options.configPath??'.okf-validator.yml',signal);else await out(text);
     return report.exitCode;

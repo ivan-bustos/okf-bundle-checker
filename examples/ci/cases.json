@@ -11,21 +11,39 @@
     "bundle": "compliance-failure",
     "policy": "default.yml",
     "expectedExitCode": 1,
-    "expectedFindings": [{"ruleId": "C002", "layer": "compliance", "severity": "error"}]
+    "expectedFindings": [
+      {
+        "ruleId": "C002",
+        "layer": "compliance",
+        "severity": "error"
+      }
+    ]
   },
   {
     "name": "quality-failure",
     "bundle": "quality-failure",
     "policy": "strict-links.yml",
     "expectedExitCode": 1,
-    "expectedFindings": [{"ruleId": "Q002", "layer": "quality", "severity": "error"}]
+    "expectedFindings": [
+      {
+        "ruleId": "Q002",
+        "layer": "quality",
+        "severity": "error"
+      }
+    ]
   },
   {
     "name": "quality-warning",
     "bundle": "quality-failure",
     "policy": "default.yml",
     "expectedExitCode": 0,
-    "expectedFindings": [{"ruleId": "Q002", "layer": "quality", "severity": "warning"}]
+    "expectedFindings": [
+      {
+        "ruleId": "Q002",
+        "layer": "quality",
+        "severity": "warning"
+      }
+    ]
   },
   {
     "name": "quality-threshold",
@@ -33,6 +51,63 @@
     "policy": "default.yml",
     "failOn": "warning",
     "expectedExitCode": 1,
-    "expectedFindings": [{"ruleId": "Q002", "layer": "quality", "severity": "warning"}]
+    "expectedFindings": [
+      {
+        "ruleId": "Q002",
+        "layer": "quality",
+        "severity": "warning"
+      }
+    ]
+  },
+  {
+    "name": "freshness-default",
+    "bundle": "stale-deadline",
+    "policy": "default.yml",
+    "now": "2026-06-30T14:00:00Z",
+    "expectedExitCode": 0,
+    "expectedFindings": []
+  },
+  {
+    "name": "freshness-strict",
+    "bundle": "stale-deadline",
+    "policy": "strict-freshness.yml",
+    "now": "2026-06-30T14:00:00Z",
+    "expectedExitCode": 1,
+    "expectedFindings": [
+      {
+        "ruleId": "Q010",
+        "layer": "quality",
+        "severity": "error"
+      }
+    ]
+  },
+  {
+    "name": "freshness-warning",
+    "bundle": "stale-deadline",
+    "policy": "warn-freshness.yml",
+    "now": "2026-06-30T14:00:00Z",
+    "expectedExitCode": 0,
+    "expectedFindings": [
+      {
+        "ruleId": "Q010",
+        "layer": "quality",
+        "severity": "warning"
+      }
+    ]
+  },
+  {
+    "name": "freshness-threshold",
+    "bundle": "stale-deadline",
+    "policy": "warn-freshness.yml",
+    "now": "2026-06-30T14:00:00Z",
+    "expectedExitCode": 1,
+    "expectedFindings": [
+      {
+        "ruleId": "Q010",
+        "layer": "quality",
+        "severity": "warning"
+      }
+    ],
+    "failOn": "warning"
   }
 ]

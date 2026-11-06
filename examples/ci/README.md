@@ -25,8 +25,24 @@ Expected cases in [`cases.json`](cases.json):
 - `quality-threshold`: the same warning with `--fail-on warning`, exit 1; its layer
   and severity stay quality/warning.
 
+Freshness cases use the same `stale-deadline` bundle and the fixed reference
+`2026-06-30T14:00:00Z`, exactly at its deadline. They are unreleased source
+features, not claims about the published beta.1 package:
+
+- `freshness-default`: Q010 is off, exit 0 and no findings. Q008 still passes
+  because the supplied deadline is well-formed.
+- `freshness-strict`: Q010 quality/error via `strict-freshness.yml`, exit 1.
+- `freshness-warning`: Q010 quality/warning via `warn-freshness.yml`, exit 0.
+- `freshness-threshold`: the same warning with `--fail-on warning`, exit 1.
+
+The enabled cases record `freshness.evaluatedAt`; no compliance findings are
+introduced. `--now` makes these cases reproducible in future runs. A production
+freshness gate should usually omit it to check the current time. Do not update
+the intentionally reached deadline just to make the strict example pass.
+
 The first three cases demonstrate the required passing and failing CI gates. The
-last two show that optional quality policy is not specification conformance.
+broken-link warning/threshold cases show that optional quality policy is not
+specification conformance.
 `missing.md` is deliberately absent from the quality-failure bundle. Do not fix it.
 
 [`github-actions.yml`](github-actions.yml) is an inactive, source-install example.

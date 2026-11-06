@@ -1,3 +1,4 @@
+import {runCiExamples} from './ci-example-smoke.mjs';
 import {spawnSync} from 'node:child_process';
 import {mkdtemp,readFile,writeFile,readdir,cp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -16,6 +17,7 @@ const result=JSON.parse(run(process.execPath,[entry,'inspect',resolve('tests/fix
 if(result.findings.length!==0||result.scope.concepts!==1)throw new Error('Packed CLI check failed');
 const full=JSON.parse(run(process.execPath,[entry,'check',resolve('tests/fixtures/shared/valid-minimal'),'--format','json'],root));
 if(!full.completed||full.schemaVersion!==1||full.scope.concepts!==1||full.exitCode!==0||full.tool.name!==source.name||full.tool.version!==source.version)throw new Error('Packed quality CLI check failed');
+await runCiExamples({cliPath:entry,outputDirectory:join(root,'freshness-ci-reports')});
 const help=run(process.execPath,[entry,'--help'],root);
 if(!help.includes(`Version ${source.version}; beta prerelease`))throw new Error('Packed CLI help identity check failed');
 const pkg=JSON.parse(await readFile(join(root,'node_modules/okf-bundle-checker/package.json'),'utf8'));
@@ -39,7 +41,7 @@ const cwdJson=JSON.parse(run(process.execPath,[npxCli,'--offline','--ignore-scri
 if(cwdJson.scope.concepts!==1||cwdJson.exitCode!==0)throw new Error('npx options-only cwd check failed');
 const api=JSON.parse(run(process.execPath,['--input-type=module','-e',`const api=await import('okf-bundle-checker'); console.log(JSON.stringify({check:typeof api.checkBundle,render:typeof api.renderReport,policy:typeof api.defaultPolicy}));`],root));
 if(api.check!=='function'||api.render!=='function'||api.policy!=='function')throw new Error('Installed public ESM entrypoint failed');
-await writeFile(join(root,'consumer.mts'),`import {checkBundle,renderReport,defaultPolicy,type Policy,type Report} from 'okf-bundle-checker';\nconst policy:Policy=defaultPolicy();\nconst report:Report=await checkBundle('synthetic-bundle',policy);\nconst text:string=renderReport(report,'text',{color:false});\nvoid text;\n`);
+await writeFile(join(root,'consumer.mts'),`import {checkBundle,renderReport,defaultPolicy,type Policy,type Report} from 'okf-bundle-checker';\nconst policy:Policy=defaultPolicy();\nconst report:Report=await checkBundle('synthetic-bundle',policy,undefined,{now:'2026-06-30T14:00:00Z'});\nconst text:string=renderReport(report,'text',{color:false});\nvoid text;\n`);
 run(process.execPath,[resolve('node_modules/typescript/bin/tsc'),'--noEmit','--strict','--module','NodeNext','--moduleResolution','NodeNext','--target','ES2022','consumer.mts'],root);
 const modules=(await readdir('src')).filter(name=>name.endsWith('.ts')).map(name=>name.slice(0,-3));
 const outputs=new Set(modules.flatMap(name=>[`dist/${name}.js`,`dist/${name}.d.ts`]));

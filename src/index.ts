@@ -26,10 +26,19 @@ import { OperationalError } from './discovery.js';
 import { defaultPolicy } from './policy.js';
 import type { Policy } from './policy.js';
 import { createReport } from './report.js';
+import { parseTimestamp } from './timestamp.js';
 import { checkMetadata } from './metadata-quality.js';
 import { checkIndexQuality } from './index-quality.js';
+export interface CheckOptions {
+  /** Fixed ISO 8601 instant with an explicit offset; otherwise sample the clock once. */
+  now?: string;
+}
 /** Complete offline check. Cancellation never returns a success-shaped report. */
-export async function checkBundle(root:string,policy:Policy=defaultPolicy(),signal?:AbortSignal) {
+export async function checkBundle(root:string,policy:Policy=defaultPolicy(),signal?:AbortSignal,options:CheckOptions={}) {
+  const freshnessEnabled=policy.rules.Q010==='warning'||policy.rules.Q010==='error';
+  const evaluatedAt=options.now ?? (freshnessEnabled ? new Date().toISOString() : undefined);
+  const now=evaluatedAt===undefined ? undefined : parseTimestamp(evaluatedAt);
+  if(evaluatedAt!==undefined&&!now)throw new OperationalError('invalid-clock','The reference time must be an ISO 8601 datetime with an explicit UTC offset.');
   // Two check phases force an intervening poll so queued OS signals are delivered.
   const checkpoint=async()=>{ await setImmediate();await setImmediate(); if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before completion.'); };
   await checkpoint();
@@ -39,10 +48,10 @@ export async function checkBundle(root:string,policy:Policy=defaultPolicy(),sign
     await checkpoint(); const doc=parseDocument(input.path,input.bytes); documents.push(doc); compliance.push(...checkCompliance(doc));
   }
   await checkpoint();
-  const quality=documents.flatMap(doc=>checkMetadata(doc,policy.rules));
+  const quality=documents.flatMap(doc=>checkMetadata(doc,policy.rules,now));
   quality.push(...checkIndexQuality(documents,scope,policy.rules,policy.indexScope));
   await checkpoint();
-  return createReport({entries:scope.entries.length,concepts:scope.conceptCount,documents:documents.length,totalBytes:scope.totalBytes,exclusions:scope.exclusions,excludedEntries:scope.excludedEntries},[...compliance,...quality],policy);
+  return createReport({entries:scope.entries.length,concepts:scope.conceptCount,documents:documents.length,totalBytes:scope.totalBytes,exclusions:scope.exclusions,excludedEntries:scope.excludedEntries},[...compliance,...quality],policy,freshnessEnabled&&evaluatedAt!==undefined?{evaluatedAt}:undefined);
 }
 
 export type { Report, Finding, ScopeSummary } from './report.js';

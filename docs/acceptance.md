@@ -126,3 +126,19 @@ These results do not establish a throughput SLA, maximum supported bundle size,
 linear scaling, worst-case behavior or a memory ceiling. The configured safety
 budgets remain documented separately; adversarial structures can cost much more
 than these representative corpora. No network or computation work is included.
+
+## Opt-in freshness regression coverage (unreleased)
+
+`test/freshness.test.mjs` verifies Q010 is off by default, Q008 acceptance is
+unchanged, and `now >= stale_after` emits only quality findings. Coverage includes
+exact boundaries, future/past deadlines, equivalent UTC offsets, accepted ISO
+forms, exact fractions, calendar/early-year edges, POSIX hour-24/second-60 rollover,
+missing/malformed fields, all statuses, reserved documents, fixed-clock report
+reproducibility, a single live clock sample, severity/threshold behavior, invalid
+clocks and cancellation. No freshness run claims factual correctness.
+
+The real-CLI smoke harness adds four synthetic freshness policies over one fixed
+deadline (default, strict, warning and warning-threshold). `npm run check` runs
+them from source and the locally installed package; `npm run smoke:ci` collects
+reports on each configured Node/OS CI target. This describes executable coverage,
+not an assertion that an unobserved remote job has passed.

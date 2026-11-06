@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Add opt-in Q010 freshness guidance for `now >= stale_after`, with the existing
+  off/warning/error severity and failure-threshold controls. Q010 defaults off;
+  Q008 syntax validation and all existing rule defaults remain unchanged.
+- Add `--now` and the engine's optional fixed reference time for reproducible
+  checks. Enabled freshness reports record `freshness.evaluatedAt`; default
+  reports only gain the additive `rules.Q010: off` entry.
+- Preserve accepted ISO forms, offsets and exact fractional-second boundaries;
+  document POSIX normalization of hour 24 and accepted second 60.
+- Add synthetic default, strict, warning and threshold CI freshness cases and
+  installed-package checks. No version bump, npm publication or release is implied.
+
 ## 1.0.0-beta.1
 
 - Promote the published alpha.2 behavior to beta.1 without changing validation
