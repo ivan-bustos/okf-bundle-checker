@@ -26,8 +26,7 @@ Expected cases in [`cases.json`](cases.json):
   and severity stay quality/warning.
 
 Freshness cases use the same `stale-deadline` bundle and the fixed reference
-`2026-06-30T14:00:00Z`, exactly at its deadline. They are unreleased source
-features, not claims about the published beta.1 package:
+`2026-06-30T14:00:00Z`, exactly at its deadline:
 
 - `freshness-default`: Q010 is off, exit 0 and no findings. Q008 still passes
   because the supplied deadline is well-formed.

@@ -9,9 +9,8 @@ synchronized release is required.
 The normative source is [SPEC.md at 0b87c52c](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/0b87c52c6ef999286c745e19998fdfcd03d5dbee/SPEC.md).
 `spec-pin.json` records the SHA-256 of the exact 37,748 source bytes. The
 validator never downloads a specification or schema during validation.
-The PDF's C004 proposal is refined by the owner's October 21 decision:
-stricter optional metadata checks are configurable quality rules, not
-unconditional conformance failures. See `rule-matrix.md` for the audit.
+Optional metadata checks are configurable quality rules, not unconditional
+conformance failures. See [the rule matrix](rule-matrix.md) for the audit.
 
 ## Documents and identity
 
@@ -46,7 +45,7 @@ choices, not additional OKF conformance requirements.
    repeatedly decode or use host path normalization on untrusted URL text.
 5. Preserve spelling/case and do not append `.md`. Split query/fragment from
    the file target. A fragment remains available for viewer navigation; heading
-   anchor validation is deferred by the checker MVP. Query text is not part of
+   anchor validation is outside the checker's scope. Query text is not part of
    the filesystem target identity.
 6. Directory paths identify directories. Do not pretend a missing optional
    child `index.md` exists, and do not conflate a directory with its index.

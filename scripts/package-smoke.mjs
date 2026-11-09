@@ -19,9 +19,9 @@ const full=JSON.parse(run(process.execPath,[entry,'check',resolve('tests/fixture
 if(!full.completed||full.schemaVersion!==1||full.scope.concepts!==1||full.exitCode!==0||full.tool.name!==source.name||full.tool.version!==source.version)throw new Error('Packed quality CLI check failed');
 await runCiExamples({cliPath:entry,outputDirectory:join(root,'freshness-ci-reports')});
 const help=run(process.execPath,[entry,'--help'],root);
-if(!help.includes(`Version ${source.version}; beta prerelease`))throw new Error('Packed CLI help identity check failed');
+if(!help.includes(`Version ${source.version}.`))throw new Error('Packed CLI help identity check failed');
 const pkg=JSON.parse(await readFile(join(root,'node_modules/okf-bundle-checker/package.json'),'utf8'));
-if(pkg.private===true||pkg.publishConfig?.tag!=='beta'||pkg.publishConfig?.access!=='public')throw new Error('Beta package metadata is inconsistent');
+if(pkg.private===true||pkg.publishConfig?.tag!=='latest'||pkg.publishConfig?.access!=='public')throw new Error('Release package metadata is inconsistent');
 if(pkg.types!=='./dist/index.d.ts'||pkg.exports?.['.']?.types!==pkg.types||pkg.exports?.['.']?.import!=='./dist/index.js')throw new Error('Missing ESM or TypeScript entrypoint');
 if(pkg.name!==source.name||pkg.version!==source.version||pkg.license!=='MIT'||pkg.bin['okf-checker']!=='dist/cli.js')throw new Error('Package identity does not match approved release contract');
 for(const path of ['LICENSE','assets/logo.svg','README.md','CHANGELOG.md','dist/index.js','dist/index.d.ts'])if(!packed.files.some(f=>f.path===path))throw new Error('Missing package documentation asset');

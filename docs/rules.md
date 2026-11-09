@@ -71,7 +71,7 @@ reached. Operational problems exit **2** and do not establish that a bundle is
 invalid or valid. Examples include unsupported declared versions, unreadable
 files, symlinks, an empty concept scope, YAML aliases/custom tags/non-string
 mapping keys, and resource limits. See [limits](limits.md), not C004, for these
-boundaries. The legacy `inspect` command runs compliance only; use `check` for
+boundaries. The `inspect` command runs compliance only; use `check` for
 this full catalog.
 
 Unless shown as a complete document, YAML examples below are frontmatter
@@ -646,8 +646,7 @@ Use Q009 as structural authoring guidance, not as an execution or security audit
 ## Q010: Freshness deadline
 
 **Policy:** quality; default `off`; configure `rules.Q010` as `off`, `warning`,
-or `error`. This is an **unreleased source-checkout feature**, not in published
-beta.1. Source: [§5.5][spec].
+or `error`. Source: [§5.5][spec].
 
 **Triggers:** a valid supplied `stale_after` has been reached or passed:
 `now >= stale_after`. Equality is stale. The rule uses one reference instant for

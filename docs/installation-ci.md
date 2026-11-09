@@ -2,10 +2,10 @@
 
 ## Version and supported targets
 
-This guide targets **`okf-bundle-checker@1.0.0-beta.1`**, with the command
-`okf-checker`. It is published on npm and is a beta prerelease, not a stable 1.0
-release. Both `latest` and `beta` currently select beta.1. The source and
-local-package options below also work independently of registry availability.
+This guide targets **`okf-bundle-checker@1.0.0`**, with the command
+`okf-checker`. Source and local-package installation work independently of registry
+availability. The npm commands require version 1.0.0 to be published first; see
+[release preparation](release-readiness.md#prepare-the-release).
 
 Use Node **22 or 24**. The CI matrix covers both Node lines on Linux, Windows and
 macOS. The CLI is Node-based and uses no OS-specific validator executable. The
@@ -21,20 +21,18 @@ not download that source or consult a moving branch.
 ## Short invocation
 
 The current checkout accepts a directory directly, or defaults to the current
-working directory when omitted. This shorthand is available starting with alpha.2.
+working directory when omitted.
 
 ```sh
-npx okf-bundle-checker ./knowledge
-# Explicitly follow the beta tag:
-npx okf-bundle-checker@beta ./knowledge
+npx okf-bundle-checker@1.0.0 ./knowledge
 # Run this only while your working directory is the intended bundle:
-npx okf-bundle-checker
+npx okf-bundle-checker@1.0.0
 ```
 
 A locally installed reviewed tarball can instead be selected offline with
 `npx --offline okf-bundle-checker ./knowledge`. Without a local installation,
-unqualified `npx okf-bundle-checker` resolves the registry's `latest` tag, not its
-`beta` tag; both tags currently select `1.0.0-beta.1`. For reproducible CI, use an
+unqualified `npx okf-bundle-checker` resolves the registry's moving `latest` tag.
+It does not necessarily select this version. For reproducible CI, use an
 exact version rather than a moving tag. Do not substitute `npx check`: that is a different npm package.
 
 `okf-checker check <directory>` remains supported. Bare `check` and `inspect`
@@ -96,9 +94,9 @@ INSTALL_DIR="$(mktemp -d)"
 # Use a writable cache in CI images without a writable home directory.
 export npm_config_cache="$INSTALL_DIR/npm-cache"
 npm pack --ignore-scripts --pack-destination "$PACKAGE_DIR"
-sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0-beta.1.tgz"
+sha256sum "$PACKAGE_DIR/okf-bundle-checker-1.0.0.tgz"
 npm install --ignore-scripts --no-audit --no-fund \
-  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0-beta.1.tgz"
+  --prefix "$INSTALL_DIR" "$PACKAGE_DIR/okf-bundle-checker-1.0.0.tgz"
 "$INSTALL_DIR/node_modules/.bin/okf-checker" check \
   "$CHECKER_SOURCE/examples/ci/bundles/passing" \
   --config "$CHECKER_SOURCE/examples/ci/policies/default.yml"
@@ -121,22 +119,29 @@ node <installation>/node_modules/okf-bundle-checker/dist/cli.js check <bundle>
 On Windows, npm's `.bin` command shim ends in `.cmd`. The smoke runner invokes Node
 directly and does not depend on shell shims. The shell variables, `mktemp` and
 `sha256sum` above are Linux conveniences, not requirements of the checker. Remove
-temporary directories when their artifacts and reports are no longer needed.
+the package and installation directories when their artifacts and reports are no longer needed.
 
 ## Install from npm
 
-Version `1.0.0-beta.1` is available from the project's npm package. Verify the
-package metadata points to this repository before installing it.
+After the maintainer publishes version `1.0.0`, verify its registry metadata
+and repository before installing it:
+
+```sh
+npm view okf-bundle-checker@1.0.0 version repository.url dist.integrity
+```
+
+This read-only check must find the exact version. If it is unavailable, use the
+source or local-package installation above.
 
 From a consuming project, pin the version explicitly:
 
 ```sh
-npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0-beta.1
+npm install --ignore-scripts --no-audit --no-fund --save-dev --save-exact okf-bundle-checker@1.0.0
 ./node_modules/.bin/okf-checker check ./knowledge --config ./policy.yml
 ```
 
 Retain the resulting consumer lockfile and use `npm ci --ignore-scripts` in CI.
-Do not rely on `latest` or a version range for a reproducible prerelease installation.
+Do not rely on `latest` or a version range for a reproducible installation.
 The same `check` flags, reports and exit codes apply to source and installed usage.
 
 ## Exit status and fixture evidence
@@ -171,8 +176,7 @@ each status explicitly. The runner also verifies the broken-link bundle exits 0
 under default warning severity, and exits 1 with `--fail-on warning` without
 changing its quality layer. Fixed-clock freshness cases additionally prove that
 a reached deadline passes by default and fails only under an opted-in Q010 gate.
-See [freshness configuration](configuration.md#opt-in-freshness-and-reproducible-checks);
-this feature is not in the published beta.1. The runner
+See [freshness configuration](configuration.md#opt-in-freshness-and-reproducible-checks). The runner
 also checks those cases against the locally installed tarball during `npm run smoke`.
 Its own exit code is 0 only when all expected results
 and reports match, otherwise 1. This harness exit is distinct from checker exit 2.
@@ -220,4 +224,4 @@ bundle source bodies. The example workflow uploads only synthetic reports/logs.
 Validation does not upload bundles, check external URL availability, execute
 embedded computation, contact Git-provider APIs, post PR comments, create native
 code annotations or emit SARIF. Automatic PR comments, native annotations and SARIF
-remain outside this beta. Structural checks are not a factual-correctness guarantee.
+are not implemented. Structural checks are not a factual-correctness guarantee.

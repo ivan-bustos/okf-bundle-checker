@@ -1,7 +1,7 @@
 # Configurable quality and reporting
 
 The `okf-checker check` command implements the local/CI contract for the
-`1.0.0-beta.1` beta. See [installation and CI](installation-ci.md) for source,
+`1.0.0` release. See [installation and CI](installation-ci.md) for source,
 local-package and conditional npm installation options.
 
 ```sh
@@ -49,7 +49,7 @@ links in all scoped parsed documents, including reserved indexes and logs. Index
 Validation is offline and read-only. Reports are explicitly requested outputs,
 not bundle rewrites. `--output` must be outside the bundle and must not replace the
 selected configuration; symlink, hard-linked and special-file outputs are refused.
-A completed report is written to a temporary file and renamed only after the
+A completed report is staged in a separate file and renamed only after the
 whole check finishes. An existing ordinary report file can be replaced, even
 when findings cause exit 1. An operational failure leaves it untouched; an old
 report is not evidence that a new run passed. Missing output directories are not
@@ -82,8 +82,8 @@ report delivery leave stdout empty. An output-device failure can leave partial
 bytes and exits 2, so consumers must check the exit status and parse the full
 report rather than trusting a prefix. No partial findings count as an all-clear. SIGINT/SIGTERM cancel before
 publication at asynchronous checkpoints; no immediate preemption of a synchronous
-parser is promised. The legacy `inspect` subcommand remains compliance-only and
-uses its original foundation JSON shape; use `check` for configurable quality.
+parser is promised. The `inspect` subcommand is compliance-only and
+uses a separate JSON shape; use `check` for configurable quality.
 
 ## Optional metadata interpretation
 
@@ -109,8 +109,7 @@ repeated Q005 findings when one entry supplies meaningful descriptive text.
 
 ## Opt-in freshness and reproducible checks
 
-Q010 is an **unreleased source-checkout feature**; it is not in published beta.1.
-It reports a quality finding when the reference instant is **at or after** a
+Q010 reports a quality finding when the reference instant is **at or after** a
 concept's valid `stale_after` (`now >= stale_after`, pinned §5.5). There is no
 extra age threshold. Missing deadlines are allowed; malformed supplied deadlines
 belong to Q008 and are skipped by Q010 even if Q008 is off. `draft`, `stable`,
@@ -188,7 +187,7 @@ Use the [rule catalog](rules.md) to interpret each code and choose remediation.
 `--output` files, and respects a nonempty `NO_COLOR` environment variable and
 `TERM=dumb`. `--color never` always disables styling; `--color always` explicitly
 forces it for text, including redirected output or an output file, overriding
-those environment hints. JSON reports, legacy `inspect` output and operational
+those environment hints. JSON reports, `inspect` output and operational
 JSON diagnostics never contain styling, regardless of color choice.
 
 ```sh

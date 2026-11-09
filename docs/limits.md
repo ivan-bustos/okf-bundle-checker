@@ -43,7 +43,7 @@ portable path APIs are not an OS sandbox against a hostile process racing ancest
 renames. Run against a private immutable copy when other actors can mutate the
 input. Never run this tool as a privilege boundary for an attacker-controlled
 live filesystem. No promise of throughput or memory usage beyond tested evidence
-is made by this release candidate.
+is made by the checker.
 
 Log entries are read as H2 date headings following §9's documented layout; H1 is
 the optional title. Calendar-valid YYYY-MM-DD is required, including leap years.
