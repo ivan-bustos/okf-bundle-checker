@@ -35,5 +35,5 @@ test('release documentation uses the matching tag and current release language',
   const release=await readFile(new URL('../docs/release-readiness.md',import.meta.url),'utf8');
   assert.ok(release.includes(`\`${pkg.version}\` / \`v${pkg.version}\``),'release tag must match the package version');
   const changelog=await readFile(new URL('../CHANGELOG.md',import.meta.url),'utf8');
-  assert.ok(changelog.includes(`## ${pkg.version}\n`),'changelog must describe the package version');
+  assert.ok(changelog.split(/\r?\n/).includes(`## ${pkg.version}`),'changelog must describe the package version');
 });
