@@ -9,29 +9,23 @@ checker for local workflows and CI. Catch structural violations, broken local
 links and missing index coverage without uploading your bundle or executing its
 contents. Standards compliance and configurable quality advice stay separate.
 
-**Published beta: `1.0.0-beta.1`, promoted from alpha.2.** Validation behavior
-is unchanged. npm’s `latest` and `beta` tags currently select this prerelease;
-being the default does not make it stable. Expect changes before stable 1.0. See the
-[changelog](CHANGELOG.md) and [beta status](docs/release-readiness.md).
+**Version 1.0.0.** See the [changelog](CHANGELOG.md) for the release contents and
+[release guide](docs/release-readiness.md) for publication steps and validation boundaries.
 
 ## Quick start
 
-Run the published beta without a global install:
+After version 1.0.0 is published to npm, run it without a global install:
 
 ```sh
-npx okf-bundle-checker ./knowledge
+npx okf-bundle-checker@1.0.0 ./knowledge
 ```
 
-Omit the directory to check the current directory. The `check` subcommand remains
-supported but is no longer required. Validation is read-only; there is no `--fix`.
-The shorthand is available starting with alpha.2.
-
-Without a local installation, this resolves npm’s `latest` tag, currently beta.1.
-Use `npx okf-bundle-checker@beta ./knowledge` to explicitly follow the beta tag,
-or `npx okf-bundle-checker@1.0.0-beta.1 ./knowledge` to pin this version. An
-unqualified command can use an existing local installation instead. The npm
-package name selects its single `okf-checker` binary automatically.
-
+Omit the directory to check the current directory. The optional `check` subcommand
+is also supported. Validation is read-only; there is no `--fix`.
+The npm package name selects its single `okf-checker` binary automatically.
+Pin the exact version for reproducible runs. An unqualified
+`npx okf-bundle-checker` can use an existing local installation or npm's moving
+`latest` tag; it does not necessarily select this version.
 
 Use Node **22 or 24**. From a checkout or extracted source archive of this version:
 
@@ -90,7 +84,6 @@ directory must already exist outside the bundle. See the
   `error`. Promoting quality to an error does not make it standards noncompliance.
 - **Opt-in freshness, Q010:** flag concepts at or past their `stale_after` deadline.
   Off by default; use warning or error severity and an optional fixed clock.
-  This is an unreleased source-checkout feature, not in the published beta.1.
   See [freshness configuration](docs/configuration.md#opt-in-freshness-and-reproducible-checks).
 - **Bounded, read-only validation:** no followed bundle symlinks, no execution of
   YAML or Markdown content, case-sensitive logical links and reports written
@@ -100,13 +93,12 @@ Custom types, extension metadata and absent optional metadata remain permitted.
 See the [rule-by-rule catalog](docs/rules.md) for examples and remediation, and
 [input limits](docs/limits.md) for the supported filesystem and parser profile.
 
-## Beta boundaries
+## Validation boundaries
 
 Structural checks do not prove that knowledge is true or safe to act on. There
 are no AI judgments, rewrites, external URL checks, computation execution,
 heading-anchor checks, baselines, index generation, PR comments or SARIF output.
 Check a stable local snapshot, not a hostile concurrently changing filesystem.
-This beta is not a production-readiness or performance guarantee.
 
 [Report a bug](https://github.com/ivan-bustos/okf-bundle-checker/issues/new) with the
 checker version, Node version, OS, relevant policy and a small synthetic example.
@@ -122,7 +114,7 @@ npm run smoke:ci    # assert passing/failing CI examples and collect reports
 npm run benchmark   # representative observations, not a performance guarantee
 ```
 
-The engine is reusable independently of the CLI. `inspect` preserves the older
+The engine is reusable independently of the CLI. `inspect` provides a
 compliance-only JSON interface; `check` includes configurable quality.
 
 Licensed under [MIT](LICENSE), including the original repository-native SVG logo.
