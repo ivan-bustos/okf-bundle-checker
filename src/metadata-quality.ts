@@ -1,3 +1,4 @@
+import type { SpecVersion } from './version.js';
 import type { PhrasingContent, RootContent } from 'mdast';
 import type { ParsedDocument, SourcePosition } from './parser.js';
 import { atOrAfter, parseTimestamp } from './timestamp.js';
@@ -16,17 +17,23 @@ function nodeText(node: RootContent | PhrasingContent): string {
   return '';
 }
 
-function inlineComputation(doc: ParsedDocument): { count: number; position?: SourcePosition } {
+function inlineComputation(doc: ParsedDocument, version: SpecVersion): { count: number; position?: SourcePosition } {
+  const lines = doc.text.split(/\r?\n/);
   let within = false;
+  let depth = 0;
   let count = 0;
   let position: SourcePosition | undefined;
   const countCode = (node: RootContent): void => {
-    if (node.type === 'code') count += 1;
+    if (node.type === 'code') {
+      const line = lines[(node.position?.start.line ?? 1)-1] ?? '';
+      if (version === '0.2' || /^\s{0,3}(`{3,}|~{3,})/.test(line)) count += 1;
+    }
     else if ('children' in node) node.children.forEach(child => countCode(child as RootContent));
   };
   for (const node of doc.ast.children) {
-    if (node.type === 'heading' && node.depth === 1) {
+    if (node.type === 'heading' && (version === '0.2' ? node.depth === 1 : !within || node.depth <= depth)) {
       within = nodeText(node).trim() === 'Computation';
+      depth = node.depth;
       if (within && !position && node.position) position = { line: node.position.start.line, column: node.position.start.column };
     } else if (within) countCode(node);
   }
@@ -36,8 +43,23 @@ function inlineComputation(doc: ParsedDocument): { count: number; position?: Sou
 }
 
 /** Optional quality guidance only. No resource is opened, fetched, or executed. */
-export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, Severity>, now?: Timestamp): QualityFinding[] {
-  const data = doc.frontmatter.data;
+export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, Severity>, now?: Timestamp, version: SpecVersion = '0.2'): QualityFinding[] {
+  const raw = doc.frontmatter.data;
+  // v0.3 empty optional values are absent, and list families accept one item.
+  const normalize = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(normalize);
+    if (!mapping(value)) return value;
+    const output: Mapping = {...value};
+    for (const [key, item] of Object.entries(output)) {
+      if (item === null || item === '' || (Array.isArray(item) && item.length === 0)) delete output[key];
+      else output[key] = normalize(item);
+    }
+    return output;
+  };
+  const data = version === '0.3' && raw ? normalize(raw) as Mapping : raw;
+  if (version === '0.3' && data) for (const key of ['sources','verified','parameters','tags']) {
+    if (has(data,key) && !Array.isArray(data[key])) data[key] = [data[key]];
+  }
   if (doc.kind !== 'concept' || doc.frontmatter.state !== 'mapping' || !data || doc.diagnostics.length > 0) return [];
   const findings: QualityFinding[] = [];
   const emitted = new Set<string>();
@@ -57,8 +79,8 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
     }
   };
   const timeField = (rule: QualityRuleId, object: Mapping, key: string, field: string, section: string, required = false): void => {
-    if ((required || has(object, key)) && !parseTimestamp(object[key])) {
-      add(rule, field, section, 'must be an ISO 8601 datetime with an explicit UTC offset', `Use a calendar datetime such as 2026-06-30T14:00:00Z for ${field}.`);
+    if ((required || has(object, key)) && !parseTimestamp(object[key],version)) {
+      add(rule, field, section, version === '0.3' ? 'must be an RFC 3339 date or datetime with an explicit offset' : 'must be an ISO 8601 datetime with an explicit UTC offset', `Use a calendar datetime such as 2026-06-30T14:00:00Z for ${field}.`);
     }
   };
   const window = (object: Mapping, field: string): void => {
@@ -114,11 +136,13 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
     if (has(data, 'status') && !(typeof data.status === 'string' && ['draft', 'stable', 'deprecated'].includes(data.status))) {
       add('Q008', 'status', '§5.4', 'must be draft, stable, or deprecated', 'Use a documented status value, or omit status to mean stable.');
     }
+    if (version === '0.3') stringField('Q008',data,'superseded_by','superseded_by','§5.4');
     timeField('Q008', data, 'stale_after', 'stale_after', '§5.5');
   }
 
   if ((rules.Q010 === 'warning' || rules.Q010 === 'error') && now) {
-    const deadline = parseTimestamp(data.stale_after);
+    const deadline = parseTimestamp(data.stale_after,version);
+    if (version === '0.3' && has(data,'stale_after') && !deadline) add('Q010','stale_after','§5.5','cannot establish freshness because the deadline is malformed','Correct the deadline before treating the concept as fresh.');
     if (deadline && atOrAfter(now, deadline)) {
       add('Q010', 'stale_after', '§5.5', 'has reached its freshness deadline', 'Review and refresh the concept before extending its stale_after deadline.');
     }
@@ -126,7 +150,7 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
 
   // A type-only concept has no computation family to assess (§11). Custom
   // concepts may use these names as extensions without adopting this contract.
-  if (rules.Q009 !== 'off' && data.type === 'Attested Computation' && computationKeys.some(key => has(data, key))) {
+  if (rules.Q009 !== 'off' && data.type === 'Attested Computation' && (version === '0.3' || computationKeys.some(key => has(data, key)))) {
     stringField('Q009', data, 'runtime', 'runtime', '§10.2', true);
     if (has(data, 'parameters')) {
       if (!Array.isArray(data.parameters)) add('Q009', 'parameters', '§10.2', 'must be a sequence of parameter mappings', 'Use parameters: [] or mappings with name, type, and required.');
@@ -135,7 +159,7 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
         if (!mapping(parameter)) { add('Q009', field, '§10.2', 'must be a parameter mapping', 'Use a mapping with name, type, and required.'); return; }
         stringField('Q009', parameter, 'name', `${field}.name`, '§10.2', true);
         stringField('Q009', parameter, 'type', `${field}.type`, '§10.2', true);
-        if (typeof parameter.required !== 'boolean') add('Q009', `${field}.required`, '§10.2', 'must be a boolean', 'Use required: true or required: false for the parameter.');
+        if ((version === '0.2' || has(parameter,'required')) && typeof parameter.required !== 'boolean') add('Q009', `${field}.required`, '§10.2', 'must be a boolean', 'Use required: true or required: false for the parameter.');
       });
     }
     for (const key of ['executor', 'attester']) {
@@ -150,12 +174,12 @@ export function checkMetadata(doc: ParsedDocument, rules: Record<QualityRuleId, 
         });
       }
     }
-    const inline = inlineComputation(doc);
+    const inline = inlineComputation(doc,version);
     if (has(data, 'computation')) {
       stringField('Q009', data, 'computation', 'computation', '§10.2/§6.2', true);
       if (inline.count > 0) add('Q009', 'computation', '§10.3', 'must not coexist with an inline computation block', 'Choose a computation path or one inline code block under # Computation, not both.');
     } else if (inline.count !== 1) {
-      add('Q009', 'body.# Computation', '§10.3', 'must contain one code block when computation is absent', 'Provide one fenced or indented code block under # Computation (§10.2 examples), or set computation to a path.', inline.position ?? { line: doc.bodyStartLine, column: 1 });
+      add('Q009', 'body.# Computation', '§10.3', 'must contain one code block when computation is absent', version === '0.3' ? 'Provide a fenced code block under a Computation heading, or set computation to a path.' : 'Provide one fenced or indented code block under # Computation (§10.2 examples), or set computation to a path.', inline.position ?? { line: doc.bodyStartLine, column: 1 });
     }
   }
   return findings;

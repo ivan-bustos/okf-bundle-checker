@@ -1,5 +1,8 @@
 # OKF compatibility contract
 
+> This document describes the retained **v0.2 profile**. For beta.2's v0.3
+> behavior, version selection and limitations, see [the v0.3 support audit](v03-support.md).
+
 Contract revision: `okf-tools-0.2-1`. Describes checker behavior and interoperability
 expectations for independent viewer implementations. No shared runtime or
 synchronized release is required.

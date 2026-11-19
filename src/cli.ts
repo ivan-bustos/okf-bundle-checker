@@ -6,7 +6,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { checkBundle, inspectCompliance, loadPolicy, OperationalError, renderReport } from './index.js';
-const HELP='Usage: okf-checker [bundle-directory] [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never] [--now <datetime>]\nAlso: okf-checker check <bundle-directory> [options] (compatible explicit form).\nOmit the directory to check the current directory. Use ./check or ./inspect for folders with reserved command names.\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nFreshness Q010 is opt-in; --now fixes its clock to an ISO datetime with an explicit offset.\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-beta.1; beta prerelease, not a stability guarantee.\n';
+const HELP='Usage: okf-checker [bundle-directory] [--config <file>] [--format text|json] [--output <file>] [--fail-on error|warning] [--color auto|always|never] [--now <datetime>]\nAlso: okf-checker check <bundle-directory> [options] (compatible explicit form).\nOmit the directory to check the current directory. Use ./check or ./inspect for folders with reserved command names.\nDefaults: cwd .okf-validator.yml if present; text output; fail on error; color auto (TTY only).\nFreshness Q010 is opt-in; --now fixes its clock to an ISO datetime with an explicit offset.\nOffline: no bundle uploads, remote URL checks or content execution.\ninspect <bundle-directory> retains the compliance-only foundation JSON interface.\nVersion 1.0.0-beta.2; beta prerelease, not a stability guarantee.\n';
 export type ColorMode='auto'|'always'|'never';
 export interface Presentation { isTTY?:boolean; env?:Readonly<Record<string,string|undefined>> }
 /** Explicit CLI choice wins; auto colors only an interactive stdout, never a report file. */
@@ -63,7 +63,7 @@ export async function run(args:string[],out:(text:string)=>void|Promise<void>,er
     if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before completion.');
     // Two event-loop turns before publication service signals queued during parsing.
     if(args.length===2&&args[0]==='inspect'&&args[1]&&!args[1].startsWith('-')) {
-      const result=await inspectCompliance(args[1],{},signal);await setImmediate();await setImmediate();if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before completion.');await out(JSON.stringify({foundationSchemaVersion:1,mode:'compliance-foundation',specVersion:'0.2',...result})+'\n');return result.findings.length?1:0;
+      const result=await inspectCompliance(args[1],{},signal);await setImmediate();await setImmediate();if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before completion.');await out(JSON.stringify({foundationSchemaVersion:1,mode:'compliance-foundation',...result})+'\n');return result.findings.length?1:0;
     }
     const options=argumentsFor(args);
     const policy=await loadPolicy({...options.configPath!==undefined?{configPath:options.configPath}:{},...options.failOn!==undefined?{failOn:options.failOn}:{}});

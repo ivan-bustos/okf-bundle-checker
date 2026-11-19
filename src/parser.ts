@@ -1,3 +1,4 @@
+import type { SpecVersion } from './version.js';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -10,7 +11,7 @@ export interface ParseDiagnostic extends SourcePosition { code: string; message:
 export interface ParsedLink extends SourcePosition { url: string; kind: 'link' | 'image'; reference?: string }
 export interface ParsedDocument {
   path: string;
-  kind: 'concept' | 'index' | 'log';
+  kind: 'concept' | 'index' | 'log' | 'other';
   text: string;
   body: string;
   bodyStartLine: number;
@@ -37,7 +38,7 @@ const diagnosticMessages: Record<string, string> = {
 };
 
 /** Parse inert data only. No network, disk reads, HTML rendering, or code execution. */
-export function parseDocument(path: string, bytes: Uint8Array): ParsedDocument {
+export function parseDocument(path: string, bytes: Uint8Array, version: SpecVersion = '0.2'): ParsedDocument {
   const basename = path.split('/').at(-1);
   const result: ParsedDocument = {
     path, kind: basename === 'index.md' ? 'index' : basename === 'log.md' ? 'log' : 'concept',
@@ -71,7 +72,7 @@ export function parseDocument(path: string, bytes: Uint8Array): ParsedDocument {
     else {
       const counter = new LineCounter();
       try {
-        const yaml = parseYaml(yamlText, { lineCounter: counter, uniqueKeys: true, stringKeys: false, schema: 'core', version: '1.2', strict: true, prettyErrors: false });
+        const yaml = parseYaml(yamlText, { lineCounter: counter, uniqueKeys: true, stringKeys: false, schema: 'core', ...(version === '0.3' ? { customTags: [{ tag: 'tag:yaml.org,2002:timestamp', resolve: (text: string) => text }] } : {}), version: '1.2', strict: true, prettyErrors: false });
         const yamlPosition = (offset: number): SourcePosition => {
           const loc = counter.linePos(offset); return { line: loc.line + 1, column: loc.col };
         };
@@ -86,7 +87,7 @@ export function parseDocument(path: string, bytes: Uint8Array): ParsedDocument {
             count += 1;
             if (count > PARSER_LIMITS.nodes || depth > PARSER_LIMITS.yamlDepth) return 'yaml-depth';
             if (isAlias(value)) return 'yaml-alias';
-            if (isNode(value) && value.tag !== undefined && !coreTags.has(value.tag)) return 'yaml-tag';
+            if (isNode(value) && value.tag !== undefined && !coreTags.has(value.tag) && !(version === '0.3' && value.tag === 'tag:yaml.org,2002:timestamp')) return 'yaml-tag';
             if (isPair(value)) {
               if (!isScalar(value.key) || typeof value.key.value !== 'string') return 'yaml-key-profile';
               return inspect(value.key, depth + 1) ?? inspect(value.value, depth + 1);
@@ -153,6 +154,10 @@ export function parseDocument(path: string, bytes: Uint8Array): ParsedDocument {
     result.links.sort((a, b) => a.line - b.line || a.column - b.column);
   } catch {
     result.ast = { type: 'root', children: [] }; result.links = []; issue('markdown-limit', { line: result.bodyStartLine, column: 1 });
+  }
+  if (version === '0.3' && result.kind === 'concept' && result.diagnostics.length === 0) {
+    const type = result.frontmatter.data?.type;
+    if (type === undefined || type === null || (typeof type === 'string' && type.trim() === '') || (Array.isArray(type) && type.length === 0)) result.kind = 'other';
   }
   return result;
 }

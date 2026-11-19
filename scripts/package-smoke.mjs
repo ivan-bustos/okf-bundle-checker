@@ -1,6 +1,6 @@
 import {runCiExamples} from './ci-example-smoke.mjs';
 import {spawnSync} from 'node:child_process';
-import {mkdtemp,readFile,writeFile,readdir,cp,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,readFile,writeFile,readdir,cp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
 const npmCli=process.env.npm_execpath;
@@ -18,6 +18,16 @@ if(result.findings.length!==0||result.scope.concepts!==1)throw new Error('Packed
 const full=JSON.parse(run(process.execPath,[entry,'check',resolve('tests/fixtures/shared/valid-minimal'),'--format','json'],root));
 if(!full.completed||full.schemaVersion!==1||full.scope.concepts!==1||full.exitCode!==0||full.tool.name!==source.name||full.tool.version!==source.version)throw new Error('Packed quality CLI check failed');
 await runCiExamples({cliPath:entry,outputDirectory:join(root,'freshness-ci-reports')});
+const v03=join(root,'v03-bundle');await mkdir(v03);
+await writeFile(join(v03,'index.md'),'---\nokf_version: "0.3"\ntitle: Bundle\n---\n');
+await writeFile(join(v03,'README.md'),'Untyped documentation');
+const v03report=JSON.parse(run(process.execPath,[entry,'check',v03,'--format','json'],root));
+if(v03report.specVersion!=='0.3'||v03report.scope.concepts!==0||v03report.findings[0]?.ruleId!=='W120')throw new Error('Installed v0.3 dispatch failed');
+const strict=spawnSync(process.execPath,[entry,'check',v03,'--fail-on','warning'],{cwd:root,encoding:'utf8'});
+if(strict.status!==1)throw new Error('Installed v0.3 threshold exit failed');
+await writeFile(join(v03,'index.md'),'---\nokf_version: "0.4"\n---\n');
+const unsupported=spawnSync(process.execPath,[entry,'check',v03],{cwd:root,encoding:'utf8'});
+if(unsupported.status!==2)throw new Error('Installed unsupported-version exit failed');
 const help=run(process.execPath,[entry,'--help'],root);
 if(!help.includes(`Version ${source.version}; beta prerelease`))throw new Error('Packed CLI help identity check failed');
 const pkg=JSON.parse(await readFile(join(root,'node_modules/okf-bundle-checker/package.json'),'utf8'));

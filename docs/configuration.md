@@ -1,5 +1,15 @@
 # Configurable quality and reporting
 
+## Beta.2 version selection
+
+`spec_version` accepts `'0.2'` and `'0.3'`. It selects the fallback for an
+unversioned bundle (default 0.2); a supported root `okf_version` declaration wins.
+Unknown declarations remain operational exit 2. Reports identify the selected
+profile. v0.3 adds fixed quality warning W120 for skipped untyped Markdown;
+`--fail-on warning` includes it. See [the v0.3 audit](v03-support.md) for timestamp,
+normalization, freshness and computation differences from the v0.2 examples below.
+
+
 The `okf-checker check` command implements the local/CI contract for the
 `1.0.0-beta.1` beta. See [installation and CI](installation-ci.md) for source,
 local-package and conditional npm installation options.

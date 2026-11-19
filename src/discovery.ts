@@ -42,7 +42,7 @@ function exclusionMatcher(pattern: string): (path: string) => boolean {
 }
 
 /** Offline snapshot discovery. Do not mutate a bundle concurrently with a check. */
-export async function discoverBundle(input: string, options: { exclusions?: string[]; limits?: Partial<DiscoveryLimits> } = {}): Promise<BundleScope> {
+export async function discoverBundle(input: string, options: { allowEmpty?: boolean; exclusions?: string[]; limits?: Partial<DiscoveryLimits> } = {}): Promise<BundleScope> {
   const limits = { ...DEFAULT_LIMITS, ...options.limits };
   for (const n of Object.values(limits)) if (!Number.isSafeInteger(n) || n < 1) throw new OperationalError('invalid-limit', 'Limits must be positive safe integers.');
   const exclusions = [...new Set(options.exclusions ?? [])].sort(comparePaths);
@@ -109,7 +109,7 @@ export async function discoverBundle(input: string, options: { exclusions?: stri
       }
     }
     await walk(root, '', 0);
-    if (result.conceptCount === 0) throw new OperationalError('empty-scope', 'No concept documents were found in the selected scope.');
+    if (result.conceptCount === 0 && !options.allowEmpty) throw new OperationalError('empty-scope', 'No concept documents were found in the selected scope.');
     result.entries.sort((a,b) => comparePaths(a.path,b.path));
     result.documents.sort((a,b) => comparePaths(a.path,b.path));
     return result;

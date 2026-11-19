@@ -64,3 +64,14 @@ export function createLinkResolver(entries: readonly BundleEntry[]): (sourcePath
 export function resolveLink(sourcePath: string, url: string, entries: readonly BundleEntry[]): LinkResolution {
   return createLinkResolver(entries)(sourcePath, url);
 }
+
+/** Path fields are file-relative; only legacy profiles may retry from the root. */
+export function resolvePathField(sourcePath: string, value: string, entries: readonly BundleEntry[], version: '0.2'|'0.3' = '0.2'): LinkResolution {
+  const resolve = createLinkResolver(entries);
+  const first = resolve(sourcePath,value);
+  if (version === '0.2' && first.kind === 'missing' && !value.startsWith('/')) {
+    const fallback = resolve('index.md',value);
+    if (fallback.kind === 'resolved') return fallback;
+  }
+  return first;
+}

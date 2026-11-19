@@ -1,5 +1,8 @@
 # Normative rule audit and stable finding IDs
 
+> This document describes the retained **v0.2 profile**. For beta.2's v0.3
+> behavior, version selection and limitations, see [the v0.3 support audit](v03-support.md).
+
 Pin and checksum: [`spec-pin.json`](spec-pin.json). Section links below refer to
 [the pinned specification](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/0b87c52c6ef999286c745e19998fdfcd03d5dbee/SPEC.md), not a moving branch.
 This audit is the contract for issues #2 and #6. Implemented-rule availability

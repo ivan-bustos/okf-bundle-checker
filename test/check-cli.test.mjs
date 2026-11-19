@@ -24,7 +24,7 @@ test('operational failures never emit success JSON or a report file',async()=>{
     for(const args of [['check',join(root,'missing')],['check',bundle,'--config','missing.yml'],['check',bundle,'--format','xml'],['check',bundle,'--fail-on','none'],['check',bundle,'--format'],['check',bundle,'--format','json','--format','json']]){
       const result=cli(root,...args,'--output',target);assert.equal(result.status,2,result.stdout);assert.equal(result.stdout,'');assert.equal(JSON.parse(result.stderr).completed,false);assert.equal(await readFile(target,'utf8'),'previous');
     }
-    await writeFile(join(root,'.okf-validator.yml'),'spec_version: "0.3"\n');assert.equal(cli(root,'check',bundle).status,2);
+    await writeFile(join(root,'.okf-validator.yml'),'spec_version: "0.4"\n');assert.equal(cli(root,'check',bundle).status,2);
     await writeFile(join(root,'.okf-validator.yml'),'exclude: ["../bad"]\n');assert.equal(cli(root,'check',bundle).status,2);
   }finally{await rm(root,{recursive:true,force:true});}
 });
