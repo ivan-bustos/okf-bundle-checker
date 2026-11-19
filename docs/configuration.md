@@ -3,7 +3,9 @@
 ## Beta.2 version selection
 
 `spec_version` accepts `'0.2'` and `'0.3'`. It selects the fallback for an
-unversioned bundle (default 0.2); a supported root `okf_version` declaration wins.
+unversioned bundle (default 0.2); a supported root `okf_version` declaration wins,
+even when root `index.md` is excluded from rule validation. Its bounded metadata
+read still counts toward `totalBytes`; excluded-root parse failures are operational.
 Unknown declarations remain operational exit 2. Reports identify the selected
 profile. v0.3 adds fixed quality warning W120 for skipped untyped Markdown;
 `--fail-on warning` includes it. See [the v0.3 audit](v03-support.md) for timestamp,

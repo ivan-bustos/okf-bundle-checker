@@ -10,6 +10,7 @@ export const DEFAULT_LIMITS: DiscoveryLimits = { maxEntries: 10_000, maxTotalByt
 export interface BundleEntry { path: string; kind: 'directory' | 'markdown' | 'asset'; bytes: number }
 export interface BundleScope {
   entries: BundleEntry[]; documents: { path: string; bytes: Uint8Array }[];
+  rootIndex?: { path: string; bytes: Uint8Array };
   exclusions: string[]; excludedEntries: number; totalBytes: number; conceptCount: number;
 }
 export const comparePaths = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
@@ -42,7 +43,7 @@ function exclusionMatcher(pattern: string): (path: string) => boolean {
 }
 
 /** Offline snapshot discovery. Do not mutate a bundle concurrently with a check. */
-export async function discoverBundle(input: string, options: { allowEmpty?: boolean; exclusions?: string[]; limits?: Partial<DiscoveryLimits> } = {}): Promise<BundleScope> {
+export async function discoverBundle(input: string, options: { readRootIndex?: boolean; allowEmpty?: boolean; exclusions?: string[]; limits?: Partial<DiscoveryLimits> } = {}): Promise<BundleScope> {
   const limits = { ...DEFAULT_LIMITS, ...options.limits };
   for (const n of Object.values(limits)) if (!Number.isSafeInteger(n) || n < 1) throw new OperationalError('invalid-limit', 'Limits must be positive safe integers.');
   const exclusions = [...new Set(options.exclusions ?? [])].sort(comparePaths);
@@ -68,7 +69,12 @@ export async function discoverBundle(input: string, options: { allowEmpty?: bool
         const logical = prefix ? `${prefix}/${name}` : name;
         if (logical.length > 4096 || /[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069\\]/.test(name)) throw new OperationalError('unsafe-path', 'A filename cannot be represented safely and portably.');
         // A directory glob like vendor/** also prunes vendor itself.
-        if (matchers.some(m => m(logical))) { result.excludedEntries++; continue; }
+        const excluded = matchers.some(m => m(logical));
+        if (excluded) {
+          result.excludedEntries++;
+          // Root version metadata is the sole exclusion exception, opt-in for validators.
+          if (!options.readRootIndex || logical !== 'index.md') continue;
+        }
         const collisionKey = logical.normalize('NFC').toLowerCase();
         if (logicalNames.has(collisionKey)) throw new OperationalError('path-collision', 'Paths collide on a supported filesystem.', logical);
         logicalNames.add(collisionKey);
@@ -78,13 +84,14 @@ export async function discoverBundle(input: string, options: { allowEmpty?: bool
         const resolved = await realpath(absolute);
         if (!contained(root, resolved) || resolved !== absolute) throw new OperationalError('outside-root', 'Path resolves outside its discovered location.', logical);
         if (stat.isDirectory()) {
+          if (excluded) continue; // Never traverse an excluded directory named index.md.
           result.entries.push({ path: logical, kind: 'directory', bytes: 0 });
           await walk(absolute, logical, depth + 1);
         } else if (stat.isFile()) {
           result.totalBytes += stat.size;
           if (result.totalBytes > limits.maxTotalBytes) throw new OperationalError('byte-limit', 'Bundle byte limit exceeded.');
           const markdown = name.endsWith('.md');
-          result.entries.push({ path: logical, kind: markdown ? 'markdown' : 'asset', bytes: stat.size });
+          if (!excluded) result.entries.push({ path: logical, kind: markdown ? 'markdown' : 'asset', bytes: stat.size });
           if (!markdown) continue;
           if (stat.size > limits.maxDocumentBytes) throw new OperationalError('document-limit', 'Markdown file exceeds the configured limit.', logical);
           const file = await open(absolute, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
@@ -102,8 +109,12 @@ export async function discoverBundle(input: string, options: { allowEmpty?: bool
             const after = await file.stat();
             if (length > limits.maxDocumentBytes) throw new OperationalError('document-limit', 'Markdown file exceeds the configured limit.', logical);
             if (length !== stat.size || after.size !== stat.size || after.mtimeMs !== stat.mtimeMs || after.ctimeMs !== stat.ctimeMs || await realpath(absolute) !== resolved) throw new OperationalError('input-changed', 'Input changed during discovery. Retry against a stable snapshot.', logical);
-            result.documents.push({ path: logical, bytes: bytes.slice(0, length) });
-            if (!['index.md', 'log.md'].includes(basename(logical))) result.conceptCount++;
+            const document = { path: logical, bytes: bytes.slice(0, length) };
+            if (options.readRootIndex && logical === 'index.md') result.rootIndex = document;
+            if (!excluded) {
+              result.documents.push(document);
+              if (!['index.md', 'log.md'].includes(basename(logical))) result.conceptCount++;
+            }
           } finally { await file.close(); }
         } else throw new OperationalError('unsupported-entry', 'Only regular files and directories are supported.', logical);
       }

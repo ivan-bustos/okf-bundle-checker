@@ -11,7 +11,13 @@ No specification or bundle resource is downloaded at runtime.
 
 A root `index.md` declaration selects `0.2` or `0.3` before checking any
 concept. String and numeric declarations are accepted (quoting is recommended).
-A supported declaration wins over configuration. With no declaration,
+A supported declaration wins over configuration and rule-validation exclusions.
+Root `index.md` is read once through the same bounded, identity-checked,
+symlink-refusing discovery path even when excluded. It remains excluded from
+rule checks, entry/document counts and index/link coverage; its bytes count
+toward the total read budget and reported totalBytes. Other excluded files and
+directories remain unread. Unparseable excluded root metadata fails operationally
+with `invalid-version-metadata`, rather than silently choosing another version. With no declaration,
 `spec_version: '0.3'` in the checker configuration selects v0.3; otherwise
 unversioned bundles retain the legacy **0.2** profile. `inspectCompliance`
 uses declarations with an unversioned 0.2 default. Low-level `parseDocument`,
@@ -59,6 +65,9 @@ when disabled, trust, attestability, attestation, or every normative consumer du
 `test/v03.test.mjs` covers typed/untyped differential behavior, index coverage,
 root/log metadata, version dispatch, timestamps and offsets, tagged YAML,
 fail-closed freshness with Q008 disabled, computation parameters/headings,
-relative path precedence and legacy fallback, and CLI exit 0/1/2. Existing v0.2
+relative path precedence and legacy fallback, and CLI exit 0/1/2. Review
+regressions cover nested list/blockquote fences, ATX versus Setext headings and
+section termination, excluded root declaration precedence, unsupported versions,
+malformed metadata, byte limits and excluded-root symlink refusal. Existing v0.2
 fixtures remain unchanged. `npm run check` runs lint, types, build, the full
 suite and an installed-package smoke; `npm run smoke:ci` verifies the CI examples.

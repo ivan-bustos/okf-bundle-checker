@@ -19,26 +19,26 @@ function nodeText(node: RootContent | PhrasingContent): string {
 
 function inlineComputation(doc: ParsedDocument, version: SpecVersion): { count: number; position?: SourcePosition } {
   const lines = doc.text.split(/\r?\n/);
+  const sourceAt = (node: RootContent): string => (lines[(node.position?.start.line ?? 1)-1] ?? '').slice((node.position?.start.column ?? 1)-1);
   let within = false;
   let depth = 0;
   let count = 0;
   let position: SourcePosition | undefined;
   const countCode = (node: RootContent): void => {
     if (node.type === 'code') {
-      const line = lines[(node.position?.start.line ?? 1)-1] ?? '';
-      if (version === '0.2' || /^\s{0,3}(`{3,}|~{3,})/.test(line)) count += 1;
+      if (version === '0.2' || /^(`{3,}|~{3,})/.test(sourceAt(node))) count += 1;
     }
     else if ('children' in node) node.children.forEach(child => countCode(child as RootContent));
   };
   for (const node of doc.ast.children) {
     if (node.type === 'heading' && (version === '0.2' ? node.depth === 1 : !within || node.depth <= depth)) {
-      within = nodeText(node).trim() === 'Computation';
+      within = nodeText(node).trim() === 'Computation' && (version === '0.2' || /^#{1,6}(?:[ \t]|$)/.test(sourceAt(node)));
       depth = node.depth;
       if (within && !position && node.position) position = { line: node.position.start.line, column: node.position.start.column };
     } else if (within) countCode(node);
   }
-  // §10.3 says fenced code, while §10.2 and Appendix A use indented code.
-  // Both Markdown code-block forms therefore count; prose or inline code does not.
+  // Legacy examples accept indented blocks; v0.3 requires ATX headings and fences.
+  // Node columns skip list/blockquote prefixes without mistaking indented code for a fence.
   return { count, ...(position ? { position } : {}) };
 }
 

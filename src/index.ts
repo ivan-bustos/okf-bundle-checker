@@ -1,15 +1,23 @@
-import { bundleVersion } from './version.js';
+import { bundleVersion, type SpecVersion } from './version.js';
 export { discoverBundle, OperationalError, DEFAULT_LIMITS } from './discovery.js';
 export { parseDocument } from './parser.js';
 export { checkCompliance, sortFindings } from './compliance.js';
-import { discoverBundle } from './discovery.js';
+import { discoverBundle, type BundleScope } from './discovery.js';
 import { parseDocument } from './parser.js';
 import { checkCompliance, sortFindings } from './compliance.js';
+/** Exclusions select rule inputs, never the root version declaration. */
+function selectedVersion(scope: BundleScope, fallback: SpecVersion = '0.2'): SpecVersion {
+  const input = scope.rootIndex;
+  const root = input ? parseDocument(input.path,input.bytes,'0.3') : undefined;
+  if (root?.diagnostics.length && !scope.documents.some(doc=>doc.path==='index.md')) {
+    throw new OperationalError('invalid-version-metadata','Excluded root index metadata cannot be parsed safely to select an OKF version.','index.md');
+  }
+  return bundleVersion(root,fallback);
+}
 /** Compatibility API: compliance-only. Use checkBundle for resolved quality policy. */
 export async function inspectCompliance(root: string, options: Parameters<typeof discoverBundle>[1] = {}, signal?:AbortSignal) {
-  const scope = await discoverBundle(root, {...options,allowEmpty:true});
-  const rootInput = scope.documents.find(doc => doc.path === 'index.md');
-  const version = bundleVersion(rootInput ? parseDocument(rootInput.path,rootInput.bytes,'0.3') : undefined);
+  const scope = await discoverBundle(root, {...options,allowEmpty:true,readRootIndex:true});
+  const version = selectedVersion(scope);
   if(version==='0.2' && scope.conceptCount===0) throw new OperationalError('empty-scope','No concept documents were found in the selected scope.');
   const documents = [];
   for(const doc of scope.documents) {
@@ -46,9 +54,8 @@ export async function checkBundle(root:string,policy:Policy=defaultPolicy(),sign
   // Two check phases force an intervening poll so queued OS signals are delivered.
   const checkpoint=async()=>{ await setImmediate();await setImmediate(); if(signal?.aborted)throw new OperationalError('interrupted','Check interrupted before completion.'); };
   await checkpoint();
-  const scope=await discoverBundle(root,{exclusions:policy.exclusions,allowEmpty:true});
-  const rootInput=scope.documents.find(doc=>doc.path==='index.md');
-  const version=bundleVersion(rootInput ? parseDocument(rootInput.path,rootInput.bytes,'0.3') : undefined,policy.specVersion);
+  const scope=await discoverBundle(root,{exclusions:policy.exclusions,allowEmpty:true,readRootIndex:true});
+  const version=selectedVersion(scope,policy.specVersion);
   if(version==='0.2' && scope.conceptCount===0) throw new OperationalError('empty-scope','No concept documents were found in the selected scope.');
   const documents=[]; const compliance=[];
   for(const input of scope.documents) {

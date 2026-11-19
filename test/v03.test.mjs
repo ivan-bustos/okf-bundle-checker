@@ -81,3 +81,34 @@ test('v0.3 reserved-only scope is valid, and inspect CLI reports the selected ve
  const root=await bundle(t,{'index.md':rootIndex('0.3')});assert.equal((await checkBundle(root)).scope.concepts,0);
  const result=spawnSync(process.execPath,['dist/cli.js','inspect',root],{encoding:'utf8'});assert.equal(result.status,0);assert.equal(JSON.parse(result.stdout).specVersion,'0.3');
 });
+
+test('v0.3 computation accepts nested fences and requires an ATX opening heading',async t=>{
+ const root=await bundle(t,{'index.md':rootIndex('0.3'),'item.md':''});const p=quiet();p.rules.Q009='warning';
+ const check=async body=>{await writeFile(join(root,'item.md'),'---\ntype: Attested Computation\nruntime: sql\n---\n'+body);return (await checkBundle(root,p)).findings;};
+ for(const body of ['## Computation\n- ```sql\n  SELECT 1\n  ```','## Computation\n> ```sql\n> SELECT 1\n> ```','  ## Computation\n  ```sql\nSELECT 1\n  ```','## Computation\n### Detail\n```sql\nSELECT 1\n```'])assert.deepEqual(await check(body),[],body);
+ for(const body of ['Computation\n-----------\n```sql\nSELECT 1\n```','Computation\n===========\n```sql\nSELECT 1\n```','## Computation\n    ```sql\n    SELECT 1\n    ```','## Computation\n## Next\n```sql\nSELECT 1\n```','## Computation\nNext\n----\n```sql\nSELECT 1\n```'])assert.ok((await check(body)).some(x=>x.message.startsWith('body.# Computation')),body);
+ await writeFile(join(root,'index.md'),rootIndex('0.2'));assert.deepEqual(await check('Computation\n===========\n```sql\nSELECT 1\n```'),[],'legacy Setext behavior remains');
+});
+test('excluded root metadata still selects the version without entering rule scope',async t=>{
+ const root=await bundle(t,{'index.md':rootIndex('0.3')+'[broken](absent.md)','README.md':'Notes','hidden/bad.md':'---\na: ['});
+ const p=defaultPolicy();p.exclusions=['index.md','hidden/**'];
+ const report=await checkBundle(root,p);assert.equal(report.specVersion,'0.3');assert.equal(report.scope.documents,1);assert.equal(report.scope.entries,1);assert.equal(report.scope.excludedEntries,2);assert.deepEqual(report.findings.map(x=>x.ruleId),['W120']);
+ assert.equal(report.scope.totalBytes,Buffer.byteLength(rootIndex('0.3')+'[broken](absent.md)Notes'));
+ assert.equal((await inspectCompliance(root,{exclusions:p.exclusions})).specVersion,'0.3');
+ await writeFile(join(root,'index.md'),rootIndex('0.2'));p.specVersion='0.3';const legacy=await checkBundle(root,p);assert.equal(legacy.specVersion,'0.2');assert.ok(legacy.findings.some(x=>x.ruleId==='C001'));
+ await writeFile(join(root,'index.md'),rootIndex('0.4'));await assert.rejects(checkBundle(root,p),{code:'unsupported-version'});await assert.rejects(inspectCompliance(root,{exclusions:p.exclusions}),{code:'unsupported-version'});
+});
+test('excluded version metadata stays bounded and malformed input fails closed',async t=>{
+ const root=await bundle(t,{'index.md':rootIndex('0.3'),'README.md':'Notes'});
+ await assert.rejects(inspectCompliance(root,{exclusions:['index.md'],limits:{maxDocumentBytes:8}}),{code:'document-limit'});
+ await assert.rejects(inspectCompliance(root,{exclusions:['index.md'],limits:{maxTotalBytes:8}}),{code:'byte-limit'});
+ await writeFile(join(root,'index.md'),'---\nokf_version: [\n---');await assert.rejects(inspectCompliance(root,{exclusions:['index.md']}),{code:'invalid-version-metadata'});
+});
+test('excluded root index symlink is refused without reading its target',async t=>{
+ const {symlink}=await import('node:fs/promises');const root=await bundle(t,{'README.md':'Notes'});const outside=await bundle(t,{'target.md':rootIndex('0.3')});
+ try{await symlink(join(outside,'target.md'),join(root,'index.md'));}catch(error){if(['EPERM','EACCES','ENOSYS'].includes(error.code)){t.skip('Symlink creation unavailable');return;}throw error;}
+ await assert.rejects(inspectCompliance(root,{exclusions:['index.md']}),{code:'symlink'});
+});
+test('an excluded directory named index.md is never traversed for metadata',async t=>{
+ const root=await bundle(t,{'index.md/bad.md':'---\na: [','item.md':concept()});const result=await inspectCompliance(root,{exclusions:['index.md']});assert.equal(result.specVersion,'0.2');assert.equal(result.scope.documents,1);assert.deepEqual(result.findings,[]);
+});
