@@ -1,8 +1,8 @@
 {
   "name": "okf-bundle-checker",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "type": "module",
-  "description": "Offline CLI and reusable engine for Open Knowledge Format v0.2 compliance and configurable knowledge-bundle quality checks.",
+  "description": "Offline CLI and reusable engine for Open Knowledge Format v0.2/v0.3 validation and configurable knowledge-bundle quality checks.",
   "engines": {
     "node": "^22.0.0 || ^24.0.0"
   },

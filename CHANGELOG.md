@@ -1,6 +1,20 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-beta.2 — Unreleased
+
+- Add explicit OKF 0.3 dispatch from root metadata or configuration, retaining
+  unversioned/v0.2 behavior and existing CLI exit/report contracts.
+- Skip untyped v0.3 Markdown with W120; support root bundle metadata, prohibit
+  log frontmatter, normalize optional metadata and singleton families, accept
+  RFC3339/date-only/YAML timestamps, and fail closed on malformed freshness.
+- Update computation parameter/runtime guidance and fenced-block discovery;
+  export a version-aware path-field resolver with legacy root fallback.
+- Pin the normative 0.3 spec at 527e81aff55992be21507e97004286789126f88c.
+  See [the audit](docs/v03-support.md) for supported scope and explicit limits.
+  No trust tiers, path-field graph, runtime execution or attestation are claimed.
+- No tag, npm publication, merge or deployment accompanies this source beta.
+
+### Freshness changes carried forward from main
 
 - Add opt-in Q010 freshness guidance for `now >= stale_after`, with the existing
   off/warning/error severity and failure-threshold controls. Q010 defaults off;
@@ -11,7 +25,7 @@
 - Preserve accepted ISO forms, offsets and exact fractional-second boundaries;
   document POSIX normalization of hour 24 and accepted second 60.
 - Add synthetic default, strict, warning and threshold CI freshness cases and
-  installed-package checks. No version bump, npm publication or release is implied.
+  installed-package checks. This source beta does not imply npm publication.
 
 ## 1.0.0-beta.1
 

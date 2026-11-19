@@ -163,9 +163,10 @@ export function checkIndexQuality(documents: ParsedDocument[], scope: BundleScop
     seen.add(key);
     findings.push({ ruleId, layer: 'quality', severity, path, message, remediation, ...(at ? { position: at } : {}), ...(source ? { source } : {}) });
   };
+  const otherPaths = new Set(documents.filter(doc=>doc.kind==='other').map(doc=>doc.path));
   const entries = new Map(scope.entries.map(entry => [entry.path, entry]));
   const selectedDocuments = new Map<string, ParsedDocument>();
-  for (const document of documents) if (entries.get(document.path)?.kind === 'markdown' && !selectedDocuments.has(document.path)) selectedDocuments.set(document.path, document);
+  for (const document of documents) if (document.kind !== 'other' && entries.get(document.path)?.kind === 'markdown' && !selectedDocuments.has(document.path)) selectedDocuments.set(document.path, document);
   const sortedDocuments = [...selectedDocuments.values()].sort((a, b) => comparePaths(a.path, b.path));
   const resolve = createLinkResolver(scope.entries);
   const directories = new Set<string>();
@@ -175,7 +176,7 @@ export function checkIndexQuality(documents: ParsedDocument[], scope: BundleScop
     expected.get(directory)!.add(target);
   };
   for (const entry of entries.values()) {
-    if (entry.kind !== 'markdown' || !isConcept(entry.path)) continue;
+    if (entry.kind !== 'markdown' || !isConcept(entry.path) || otherPaths.has(entry.path)) continue;
     let directory = parentDirectory(entry.path);
     addExpected(directory, entry.path);
     while (true) {

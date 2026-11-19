@@ -1,5 +1,8 @@
 # Rule-by-rule reference
 
+> This document describes the retained **v0.2 profile**. For beta.2's v0.3
+> behavior, version selection and limitations, see [the v0.3 support audit](v03-support.md).
+
 Use the rule ID in a finding to jump to its explanation below. This catalog
 describes what the checker actually implements, including cases it deliberately
 does not validate. All examples are synthetic.

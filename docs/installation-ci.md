@@ -1,5 +1,10 @@
 # Installation and portable CI
 
+**Current source version: 1.0.0-beta.2 (unpublished).** Build this checkout or
+use its locally packed tarball for OKF v0.3. Registry commands below describe
+the previously published v0.2 beta.1, not the new beta. See the
+[v0.3 support audit](v03-support.md) and [release status](release-readiness.md).
+
 ## Version and supported targets
 
 This guide targets **`okf-bundle-checker@1.0.0-beta.1`**, with the command

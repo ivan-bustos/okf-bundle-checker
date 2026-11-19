@@ -4,34 +4,31 @@
 
 **Check your knowledge bundle before it reaches your team.**
 
-An offline [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
+An offline [Open Knowledge Format](https://github.com/open-knowledge-format/open-knowledge-format)
 checker for local workflows and CI. Catch structural violations, broken local
 links and missing index coverage without uploading your bundle or executing its
 contents. Standards compliance and configurable quality advice stay separate.
 
-**Published beta: `1.0.0-beta.1`, promoted from alpha.2.** Validation behavior
-is unchanged. npm’s `latest` and `beta` tags currently select this prerelease;
-being the default does not make it stable. Expect changes before stable 1.0. See the
-[changelog](CHANGELOG.md) and [beta status](docs/release-readiness.md).
+**Source beta: `1.0.0-beta.2`, targeting OKF v0.3 with v0.2 compatibility.**
+This version is not published. See the [v0.3 support audit and limitations](docs/v03-support.md)
+and [release status](docs/release-readiness.md). A root version declaration selects
+the profile; unversioned input defaults to v0.2. This is a validator beta, not a
+complete OKF consumer or stable 1.0 release.
 
 ## Quick start
 
-Run the published beta without a global install:
+The previously published beta.1 supports v0.2. To use that version:
 
 ```sh
-npx okf-bundle-checker ./knowledge
+npx okf-bundle-checker@1.0.0-beta.1 ./knowledge
 ```
 
 Omit the directory to check the current directory. The `check` subcommand remains
 supported but is no longer required. Validation is read-only; there is no `--fix`.
 The shorthand is available starting with alpha.2.
 
-Without a local installation, this resolves npm’s `latest` tag, currently beta.1.
-Use `npx okf-bundle-checker@beta ./knowledge` to explicitly follow the beta tag,
-or `npx okf-bundle-checker@1.0.0-beta.1 ./knowledge` to pin this version. An
-unqualified command can use an existing local installation instead. The npm
-package name selects its single `okf-checker` binary automatically.
-
+For the new v0.3 beta, use this checkout or a locally packed tarball; do not
+expect beta.2 to exist on npm until a separate maintainer publication.
 
 Use Node **22 or 24**. From a checkout or extracted source archive of this version:
 
@@ -84,7 +81,8 @@ directory must already exist outside the bundle. See the
 ## What it checks
 
 - **Compliance, C001–C003:** UTF-8 Markdown, YAML frontmatter, required concept
-  type and reserved index/log rules from a [pinned OKF v0.2 audit](docs/rule-matrix.md).
+  type and version-aware reserved index/log rules from the [v0.3 audit](docs/v03-support.md)
+  and [v0.2 audit](docs/rule-matrix.md). Untyped Markdown is skipped with W120 in v0.3.
 - **Quality, Q001–Q009:** descriptions, local links, directory indexes, index
   coverage and supplied metadata shapes. Each rule accepts `off`, `warning` or
   `error`. Promoting quality to an error does not make it standards noncompliance.

@@ -27,7 +27,7 @@ export function parseConfig(bytes: Uint8Array): Partial<Policy> {
   if (!mapping(value)) fail();
   for(const key of Object.keys(value)) if(!['spec_version','fail_on','exclude','rules','index_scope'].includes(key)) fail();
   const result:Partial<Policy>={};
-  if ('spec_version' in value) { if(value.spec_version!=='0.2' && value.spec_version!==0.2) throw new OperationalError('unsupported-version','Only the pinned OKF 0.2 profile is supported.'); result.specVersion='0.2'; }
+  if ('spec_version' in value) { if(value.spec_version!=='0.2' && value.spec_version!==0.2 && value.spec_version!=='0.3' && value.spec_version!==0.3) throw new OperationalError('unsupported-version','Supported OKF profiles are 0.2 and 0.3.'); result.specVersion=String(value.spec_version) as Policy['specVersion']; }
   if ('fail_on' in value) { if(value.fail_on!=='error' && value.fail_on!=='warning') fail(); result.failOn=value.fail_on; }
   if ('index_scope' in value) { if(value.index_scope!=='all' && value.index_scope!=='root') fail(); result.indexScope=value.index_scope; }
   if ('exclude' in value) {

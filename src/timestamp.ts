@@ -1,7 +1,15 @@
+import type { SpecVersion } from './version.js';
 export interface Timestamp { seconds: number; fraction: string }
 
 /** Calendar datetimes with an explicit ISO 8601 UTC offset; never infer a local zone. */
-export function parseTimestamp(value: unknown): Timestamp | undefined {
+export function parseTimestamp(value: unknown, version: SpecVersion = '0.2'): Timestamp | undefined {
+  if (version === '0.3') {
+    if (value instanceof Date && Number.isFinite(value.getTime())) value = value.toISOString();
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) value += 'T00:00:00Z';
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[Zz]|[+-]\d{2}:\d{2})$/.test(value)) return undefined;
+    if (Number(value.slice(11,13)) > 23) return undefined;
+    value = value.toUpperCase();
+  }
   if (typeof value !== 'string') return undefined;
   // ISO permits basic or extended calendar/time forms, omitted seconds, fractional
   // seconds, and offsets written as +hh, +hhmm, or +hh:mm. Do not impose RFC 3339.
